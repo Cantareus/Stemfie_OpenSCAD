@@ -15,14 +15,16 @@
 //   Contact: paulo.kiefe@stemfie.org (https://stemfie.org)
 
 
-//Universal constants
+// Section: Universal constants
 
 // Constant: BU
 // Description: Universal voxel block unit (mm) in Stemfie (BlockUnit)
 BU = 12.5;
+
 // Constant:HoleRadius
 // Description: Universal radius (mm) of the connection hole
 HoleRadius = 3.5;
+
 // Constant: FragmentNumber
 // Description: Universal tesselation value of curved surfaces
 FragmentNumber = 32;
@@ -49,18 +51,406 @@ ShaftRadius = HoleRadius - Clearance;
 // Description: Universal distance (mm) between two flat sides of the connection shaft.
 ShaftFlat = 5;
 
-
 $fn = FragmentNumber;
-//color("lightgreen")
-//beam_block(d = [3, 2, 1], holes = [1, 1 , 1]);
 
-//brace_cross(lengths = [3,1,2,1]);
-//beam_cross(lengths = [2]);
-//brace_arc_blank(5, angle = 90);
-//BU_slot(2);
-//shaft_head();
-//shaft_profile();
-//brace(3);
+// Section: Stemfie Parts
+// Subsection: Beams
+
+// Module: beam_block()
+// Usage: 
+//   beam_block(size, holes);
+// Description:
+//   Creates a Stemfie beam with holes.
+// Arguments:
+//   size = Size of block to create in block units.
+//   holes = Array of booleans in xyz order for which directions to create holes or a single boolean for all directions.
+// Example(3D): Standard Stemfie beam
+//   beam_block(3);
+// Example(3D): Stemfie beam with vertical holes only.
+//   beam_block(3, holes = [false, false, true]);
+// Example(3D): Stemfie 3D "beam"
+//   beam_block([3, 2, 2]);
+module beam_block(size = [4,1,1], holes = [true, true, true])
+{
+    size = is_list(size)?size:[size,1, 1];
+    holes = is_list(holes)?holes:[holes,holes,holes];
+    
+    faceRotate = [[0,90,0],[90,0,0],[0,0,90]];
+    T((size - [1,1,1]) * BU / 2)
+    D()
+    {
+        U()
+        {
+
+            D()
+            {
+                BU_cube(size);
+                    Tz(size.z * BU / 2)
+                    bevel(offs = -Chamfer * 2 - BevelWidth, neg = true)
+                    Sq(size.x * BU, size.y * BU);
+            }
+            
+            hole_grid(size = [size.x, size.y], l = size.z, neg = false);
+        }
+        
+        for(i = [0:2])
+        {
+            if(holes[i])
+            R(faceRotate[i])
+                hole_grid(size = [size[(i + 2) % 3], size[(i + 1) % 3]], l = size[i], neg = true);
+
+        }
+
+    }
+}
+
+// Module: beam_cross()
+// Usage: 
+//   beam_cross(lengths);
+// Description:
+//   Overlaps two Stemfie beams. It can be used to create 'V', 'L', 'T' and 'X' shapes.
+// Arguments:
+//   lengths = Array of 2, 3 or 4 integers. Lengths extending from intersection block with clockwise ordering.
+// Example(3D): 'V' beam
+//   beam_cross([3,3]);
+// Example(3D): 'L' beam
+//   beam_cross([5,3]);
+// Example(3D): 'T' beam
+//   beam_cross([2,3,2]);
+// Example(3D): 'X' beam
+//   beam_cross([2,2,2,2]);
+module beam_cross(lengths = [2,2,2,2])
+{
+    cross_helper(len(lengths))
+    {
+        beam_block([lengths[0] + 1,1,1]);
+        if(len(lengths) > 1)
+            beam_block([lengths[1] + 1,1,1]);
+        if(len(lengths) > 2)
+            beam_block([lengths[2] + 1,1,1]);
+        if(len(lengths) > 3)
+            beam_block([lengths[3] + 1,1,1]);
+    }
+}
+
+// Subsection: Braces
+// Module: brace()
+// Usage: 
+//   brace(size, <h=>, <holes=>);
+// Description:
+//   Creates a Stemfie brace with holes.
+// Arguments:
+//   size = Length of brace to create in block units.
+//   h = height of brace
+//   holes = Set to false to create blank brace.
+// Example(3D): Standard Stemfie brace
+//   brace(3);
+// Example(3D): Double thickness blank brace
+//   brace(3, h = 0.5, holes = false);
+module brace(size, h = 0.25, holes = true)
+{
+    Tx((size-1) * BU/2)
+    D()
+    {
+        U()
+        {
+            bevel_plate(h)BU_slot(size);
+            if(holes)
+            hole_grid([size,1],h,false);
+        }
+        if(holes)
+        hole_grid([size,1],h,true);
+    }
+    
+}
+
+// Module: brace_cross()
+// Usage: 
+//   brace_cross(lengths, <h>);
+// Description:
+//   Overlaps two Stemfie brace. It can be used to create 'V', 'L', 'T' and 'X' shapes.
+// Arguments:
+//   lengths = Array of 2, 3 or 4 integers. Lengths extending from intersection block with clockwise ordering.
+//   h = Height of brace, default = 0.25BU
+// Example(3D): 'V' brace
+//   brace_cross([3,3]);
+// Example(3D): 'L' brace
+//   brace_cross([5,3]);
+// Example(3D): 'T' brace
+//   brace_cross([2,3,2]);
+// Example(3D): Double thickness 'X' brace
+//   brace_cross([1, 1, 1, 1], 0.5);
+module brace_cross(lengths = [2,2,2,2], h = 0.25)
+{
+    cross_helper(len(lengths))
+    {
+        brace(lengths[0] + 1, h);
+        if(len(lengths) > 1)
+            brace(lengths[1] + 1, h);
+        if(len(lengths) > 2)
+            brace(lengths[2] + 1, h);
+        if(len(lengths) > 3)
+            brace(lengths[3] + 1, h);
+    }
+}
+
+// Section: Helper Modules
+// Subsection: General
+
+// Module: hole()
+// Usage:
+//   hole(l, neg);
+// Description:
+//   Create a circular standard sized hole with beveled top and bottom.
+// Arguments:
+//   l = The length of the hole in base units.
+//   neg = true to create hole cavity, false to create sleeve and bevel.
+// Example(3D):
+//   difference()
+//   {
+//     BU_cube();
+//     hole(l = 1, neg = true);
+//   }
+// Example(3D):
+//   hole(l = 1, neg = false);
+// Example(3D):
+//   difference()
+//   {
+//     hole(l = 1, neg = false);
+//     hole(l = 1, neg = true);
+//   }
+module hole(l = 1, neg = true)
+{
+    cutout(l, neg)
+        Ci(r = HoleRadius);
+}
+
+// Module: cutout()
+// Usage:
+//   cutout(l, neg);
+// Description:
+//   Create an irregular sized hole with beveled top and bottom. Children should be a convex 2D shape.
+// Arguments:
+//   l = The length of the cutout in base units.
+//   neg = true to create cutout cavity, false to create sleeve and top bevel.
+// Example(3D): Create a brace with a slot down most of the length.
+//   difference()
+//   {
+//     union()
+//     {
+//       brace(4, holes = false);
+//       
+//       cutout(l = 0.25, neg = false)
+//         Tx(BU)
+//         hole_slot(l = 3);
+//     }
+//     cutout(l = 0.25, neg = true)
+//     Tx(BU)
+//     hole_slot(l = 3);
+//   }
+// Example(3D): Shaft shaped hole in brace.
+//   difference()
+//   {
+//     union()
+//     {
+//       brace(4, holes = false);
+//         cutout(l = 0.25, neg = false)
+//           offset(r=Clearance)
+//             shaft_profile();
+//     }
+//     cutout(l = 0.25, neg = true)
+//       offset(r=Clearance)
+//         shaft_profile();
+//   }
+module cutout(l = 1, neg = true)
+{
+    if(neg)
+    {
+        U()
+        {
+            LiEx(l * BU + 0.1)
+                children();
+            MKz()
+                Tz((l * BU)/2)
+                    bevel(0, true)
+                        children();
+                   
+        }
+    }
+    else
+    {
+        Tz(-Chamfer / 2)
+        LiEx(h = l * BU - Chamfer)
+            offset(Chamfer * 2 + BevelWidth)children();
+        Tz((l * BU)/2)
+            bevel(Chamfer * 2 + BevelWidth, false)
+                children();
+            
+    }
+}
+
+// Module: hole_grid()
+// Usage:
+//   hole_grid(size, <l=>, <neg=>);
+// Description:
+//   Creates a rectangular array of holes centered on the origin with block unit spacing.
+// Arguments:
+//   size = List with number of holes in X and Y directions.
+//   l = See {{hole()}}
+//   neg = See {{hole()}}
+// Example(3D): Create a 4x5 block with vertical holes.
+//   difference()
+//   {
+//     BU_cube([4,5,1]);
+//     hole_grid([4,5]);
+//   }
+// Example(3D): Create a 4x5x0.25 block unit plate with holes.
+//   difference()
+//   {
+//     union()
+//     {
+//       bevel_plate(h = 0.25)
+//         offset(r = BU/2)
+//           square([3 * BU, 4 * BU], center = true);
+//       hole_grid([4,5], l = 0.25, neg = false);
+//     }
+//     hole_grid([4,5], l = 0.25);
+//   }
+module hole_grid(size = [1,1], l = 1, neg = true)
+{
+    forXY(N = size.x, M = size.y, dx = BU, dy = BU)
+        hole(l = l, neg = neg);
+}
+
+// Module hole_list()
+// Usage:
+//   hole_list(list, <l=>, <neg=>);
+// Description:
+//   Creates a rectangular array of holes centered on the origin with block unit spacing.
+// Arguments:
+//   list = List with location of holes by X,Y co-ordinates in block units.
+//   l = See {{hole()}}
+//   neg = See {{hole()}}
+// Example(3D): Create brace with custom hole locations
+//   difference()
+//   {
+//     union()
+//     {
+//       brace(5, holes = false);
+//       hole_list([[0,0],[4,0]], l = 0.25, neg = false);
+//     }
+//     hole_list([[0,0],[4,0]], l = 0.25);
+//   }
+module hole_list(list = [[0,0]], l = 1, neg = true)
+{
+    for(i = list)
+        T(i.x * BU, i.y * BU, 0)
+            hole(l = l, neg = neg);
+}
+
+
+// Module: hole_slot()
+// Usage:
+//   hole_slot(l);
+// Description:
+//   Create a 2D slot profile with radius HoleRadius
+// Arguments:
+//   l = Length of slot in block units.
+// Example(2D):
+//   hole_slot(2);
+module hole_slot(l)
+{
+    slot(l, HoleRadius);
+}
+
+// Module: BU_slot()
+// Usage:
+//   BU_slot(l);
+// Description:
+//   Create a 2D slot profile with radius {{BU}}/2
+// Arguments:
+//   l = Length of slot in block units.
+// Example(2D):
+//   BU_slot(2);
+module BU_slot(l)
+{
+    slot(l, BU/2);
+}
+
+// Module: slot()
+// Usage:
+//   slot(l, r);
+// Description:
+//   Create a 2D slot profile.
+// Arguments:
+//   l = Length of slot in block units.
+// Example(2D):
+//   slot(2);
+module slot(l, r = BU/2)
+{
+    hull()
+    {
+        MKx()
+            Tx(l*BU / 2 - BU / 2)
+                Ci(r = r);
+    }
+}
+
+module bevel(offs = 0, neg = true)
+{
+    offs = offs + (neg?Chamfer:0);
+    Tz(neg?0:-Chamfer)
+    Sz(neg?-1:1)
+    hull()
+    {
+        Tz(-0.05)
+            LiEx(0.1)
+                offset(offs)
+                children();
+        
+        Tz(Chamfer / 2)
+        LiEx(Chamfer)
+                offset(offs - Chamfer)
+                children();
+    }
+}
+
+module bevel_plate(h = 0.25)
+{
+    D()
+    {
+        hull()
+        {
+            LiEx(BU * h - Chamfer * 2)children();
+            LiEx(BU * h)offset(r = -Chamfer)children();
+        }
+
+        Tz(BU * h / 2)
+            bevel(-Chamfer * 2 - BevelWidth, true)children();
+
+    }
+}
+
+module cross_helper(num = 4)
+{
+    for(i = [0: min(3, num - 1)])
+    {
+        Rz(-90 * i)
+        D()
+        {
+            children(i);
+            if(num > 1)
+            {
+                if(num != 2 || i != 1)
+                    Rz(num == 3 && i == 2?0:45)T(-BU)Cu(BU * 2);
+                if(num != 2 || i != 0)
+                    Rz(num == 3 && i == 0?0:-45)Tx(-BU)Cu(BU * 2);
+            }
+        }
+    }
+
+}
+// Subsection: Shafts
 
 // Module: shaft_profile()
 // Usage:
@@ -82,7 +472,7 @@ module shaft_profile()
 // Usage: 
 //   shaft_head_profile()
 // Description:
-//   Creats a stemfie 2D profile for creating shafts and screw heads.
+//   Creates a stemfie 2D profile for creating shafts and screw heads.
 // Example(2D):
 //   shaft_head_profile();
 module shaft_head_profile()
@@ -152,205 +542,7 @@ module shaft(l = 1, beveled_ends = true)
     }
 }
 
-// Module: shaft_with_hole()
-// Usage:
-//   shaft_with_hole(l, d)
-// Description:
-//   Stemfie blank shaft for creating shafts and screws.
-// Arguments:
-//   l = Length of shaft.
-//   d = Diameter of hole through shaft.
-//   beveled_ends = Bevel ends of shaft using the global {{Chamfer}} setting.
-// Example(3D):
-//   shaft_with_hole(4);
-// Example(3D):
-//   shaft_with_hole(4, 1.2, false);
-module shaft_with_hole(l = 1, d = 2.1, beveled_ends = true)
-{
-    D()
-    {
-        shaft(l, beveled_ends);
-        Ry(90)
-        cutout(l, true)
-            Ci(d = d);
-    }
-}
-
-
-// Module: hole()
-// Usage:
-//   hole(l, neg);
-// Description:
-//   Create a circular standard sized hole with beveled top and bottom.
-// Arguments:
-//   l = The length of the hole in base units.
-//   neg = true to create hole cavity, false to create sleeve and bevel.
-// Example(3D):
-//   D()
-//   {
-//     BU_cube();
-//     hole(l = 1, neg = true);
-//   }
-// Example(3D):
-//   hole(l = 1, neg = false);
-// Example(3D):
-//   D()
-//   {
-//     hole(l = 1, neg = false);
-//     hole(l = 1, neg = true);
-//   }
-module hole(l = 1, neg = true)
-{
-    cutout(l, neg)
-        Ci(r = HoleRadius);
-}
-
-// Module: cutout()
-// Usage:
-//   cutout(l, neg);
-// Description:
-//   Create an irregular sized hole with beveled top and bottom. Children should be a convex 2D shape.
-// Arguments:
-//   l = The length of the cutout in base units.
-//   neg = true to create cutout cavity, false to create sleeve and top bevel.
-// Example(3D):
-//   cutout(l = 2, neg = true)
-//     slot(l = 3);
-// Example(3D): 
-//   cutout(l = 2, neg = false);
-//     slot(l = 3);
-// Example(3D): Square hole
-//   D()
-//   {
-//     cutout(l = 2, neg = false)
-//       square(HoleRadius * 2, center = true);
-//     cutout(l = 2, neg = true)
-//       square(HoleRadius * 2, center = true);
-//   }
-module cutout(l = 1, neg = true)
-{
-    if(neg)
-    {
-        U()
-        {
-            LiEx(l * BU + 0.1)
-                children();
-            MKz()
-                Tz((l * BU)/2)
-                    bevel(true, 0)
-                        children();
-                   
-        }
-    }
-    else
-    {
-        Tz(-Chamfer / 2)
-        LiEx(h = l * BU - Chamfer)
-            offset(Chamfer * 2 + BevelWidth)children();
-        Tz((l * BU)/2)
-            bevel(false, Chamfer * 2 + BevelWidth)
-                children();
-            
-    }
-}
-
-
-module hole_grid(size = [1,1], l = 1, neg = true)
-{
-    forXY(N = size.x, M = size.y, dx = BU, dy = BU)
-        hole(l = l, neg = neg);
-}
-
-module hole_list(list = [[0,0]], l = 1, neg = true)
-{
-    for(i = list)
-        T(i.x * BU, i.y * BU, 0)
-            hole(l = l, neg = neg);
-}
-
-
-// Module: hole_slot()
-// Usage:
-//   hole_slot(l);
-// Description:
-//   Create a 2D slot profile with radius HoleRadius
-// Arguments:
-//   l = Length of slot in block units.
-// Example(2D):
-//   hole_slot(2);
-module hole_slot(l)
-{
-    slot(l, HoleRadius);
-}
-
-// Module: BU_slot()
-// Usage:
-//   BU_slot(l);
-// Description:
-//   Create a 2D slot profile with radius {{BU}}/2
-// Arguments:
-//   l = Length of slot in block units.
-// Example(2D):
-//   BU_slot(2);
-module BU_slot(l)
-{
-    slot(l, BU/2);
-}
-
-// Module: slot()
-// Usage:
-//   slot(l, r);
-// Description:
-//   Create a 2D slot profile.
-// Arguments:
-//   l = Length of slot in block units.
-// Example(2D):
-//   slot(2);
-module slot(l, r = BU/2)
-{
-    hull()
-    {
-        MKx()
-            Tx(l*BU / 2 - BU / 2)
-                Ci(r = r);
-    }
-}
-
-module bevel(neg = true, offs = 0)
-{
-    offs = offs + (neg?Chamfer:0);
-    Tz(neg?0:-Chamfer)
-    Sz(neg?-1:1)
-    hull()
-    {
-        Tz(-0.05)
-            LiEx(0.1)
-                offset(offs)
-                children();
-        
-        Tz(Chamfer / 2)
-        LiEx(Chamfer)
-                offset(offs - Chamfer)
-                children();
-    }
-}
-
-module bevel_plate(h = 0.25)
-{
-    D()
-    {
-        hull()
-        {
-            LiEx(BU * h - Chamfer * 2)children();
-            LiEx(BU * h)offset(r = -Chamfer)children();
-        }
-
-        Tz(BU * h / 2)
-            bevel(true, -Chamfer * 2 - BevelWidth)children();
-
-    }
-}
-
+// Subsection: Braces
 module brace_cross_section(h = 0.25)
 {
     
@@ -390,38 +582,8 @@ module brace_arc_blank(r, angle)
             
 }
 
-module brace(l = 1, h = 0.25, hole_sizes=[1])
-{
-    num_holes = len(hole_sizes);
-    
-    Tx((l-1) * BU/2)
-    D()
-    {
-        U()
-        {
-            bevel_plate(h)slot(l);
-            hole_grid([l,1],h,false);
-        }
-        hole_grid([l,1],h,true);
-    }
-    
-}
 
-module brace_cross(lengths = [2,2,2,2])
-{
-    cross_helper(len(lengths))
-    {
-        brace(lengths[0] + 1);
-        if(len(lengths) > 1)
-            brace(lengths[1] + 1);
-        if(len(lengths) > 2)
-            brace(lengths[2] + 1);
-        if(len(lengths) > 3)
-            brace(lengths[3] + 1);
-    }
-}
-
-
+// Subsection: Beams
 module BU_cube(size = [1,1,1])
 {
     D()
@@ -431,74 +593,6 @@ module BU_cube(size = [1,1,1])
                 Cu(size * BU - i * Chamfer*2);
     }
 }
-
-
-module beam_cross(lengths = [2,2,2,2])
-{
-    cross_helper(len(lengths))
-    {
-        beam_block([lengths[0] + 1,1,1]);
-        if(len(lengths) > 1)
-            beam_block([lengths[1] + 1,1,1]);
-        if(len(lengths) > 2)
-            beam_block([lengths[2] + 1,1,1]);
-        if(len(lengths) > 3)
-            beam_block([lengths[3] + 1,1,1]);
-    }
-}
-
-module cross_helper(num = 4)
-{
-    for(i = [0: max(3, num - 1)])
-    {
-        Rz(-90 * i)
-        D()
-        {
-            children(i);
-            if(num > 1)
-            {
-                if(num != 2 || i != 1)
-                    Rz(num == 3 && i == 2?0:45)T(-BU)Cu(BU * 2);
-                if(num != 2 || i != 0)
-                    Rz(num == 3 && i == 0?0:-45)Tx(-BU)Cu(BU * 2);
-            }
-        }
-    }
-
-}
-
-module beam_block(size = [5,1,1], holes =[1,1,1])
-{
-    faceRotate = [[0,90,0],[90,0,0],[0,0,90]];
-    //Tz(size.z * BU/2)
-    T((size - [1,1,1]) * BU / 2)
-    D()
-    {
-        U()
-        {
-
-            D()
-            {
-                BU_cube(size);
-                    Tz(size.z * BU / 2)
-                    bevel(true, offs = -Chamfer * 2 - BevelWidth)
-                    Sq(size.x * BU, size.y * BU);
-            }
-            
-            hole_grid(size = [size.x, size.y], l = size.z, neg = false);
-        }
-        
-        for(i = [0:2])
-        {
-            if(holes[i])
-            R(faceRotate[i])
-                hole_grid(size = [size[(i + 2) % 3], size[(i + 1) % 3]], l = size[i], neg = true);
-
-        }
-
-    }
-}
-
 
 /// https://www.thingiverse.com/thing:644830
 /// ShortCuts.scad 
