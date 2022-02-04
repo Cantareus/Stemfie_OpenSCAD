@@ -405,8 +405,8 @@ module slot(l, r = BU/2)
 
 //Module: bevel
 //Example(3D):
-bevel(neg = false)
-  circle(r = HoleRadius);
+//bevel(neg = true)
+//  circle(r = HoleRadius);
 module bevel(offs = 0, neg = true)
 {
     offs = offs + (neg?Chamfer:0);
