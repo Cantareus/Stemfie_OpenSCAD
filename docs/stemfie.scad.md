@@ -7,23 +7,40 @@ To use, add the following lines to the beginning of your file:
 
 ## Table of Contents
 
-- [`BU`](#constant-bu)
-- [`FragmentNumber`](#constant-fragmentnumber)
-- [`Chamfer`](#constant-chamfer)
-- [`BevelWidth`](#constant-bevelwidth)
-- [`Clearance`](#constant-clearance)
-- [`ShaftRadius`](#constant-shaftradius)
-- [`ShaftFlat`](#constant-shaftflat)
-- [`shaft_profile()`](#module-shaft_profile)
-- [`shaft_head_profile()`](#module-shaft_head_profile)
-- [`shaft_head()`](#module-shaft_head)
-- [`shaft()`](#module-shaft)
-- [`shaft_with_hole()`](#module-shaft_with_hole)
-- [`hole()`](#module-hole)
-- [`cutout()`](#module-cutout)
-- [`hole_slot()`](#module-hole_slot)
-- [`BU_slot()`](#module-bu_slot)
-- [`slot()`](#module-slot)
+1. [Section: Universal constants](#section-universal-constants)
+    - [`BU`](#constant-bu)
+    - [`FragmentNumber`](#constant-fragmentnumber)
+    - [`Chamfer`](#constant-chamfer)
+    - [`BevelWidth`](#constant-bevelwidth)
+    - [`Clearance`](#constant-clearance)
+    - [`ShaftRadius`](#constant-shaftradius)
+    - [`ShaftFlat`](#constant-shaftflat)
+
+2. [Section: Stemfie Parts](#section-stemfie-parts)
+    1. [Subsection: Beams](#subsection-beams)
+    2. [Subsection: Braces](#subsection-braces)
+    3. [Subsection: General](#subsection-general)
+    4. [Subsection: Shafts](#subsection-shafts)
+    5. [Subsection: Braces](#subsection-braces)
+    6. [Subsection: Beams](#subsection-beams)
+    
+    - [`beam_block()`](#module-beam_block)
+    - [`beam_cross()`](#module-beam_cross)
+    - [`brace()`](#module-brace)
+    - [`brace_cross()`](#module-brace_cross)
+    - [`hole()`](#module-hole)
+    - [`cutout()`](#module-cutout)
+    - [`hole_grid()`](#module-hole_grid)
+    - [`hole_slot()`](#module-hole_slot)
+    - [`BU_slot()`](#module-bu_slot)
+    - [`slot()`](#module-slot)
+    - [`shaft_profile()`](#module-shaft_profile)
+    - [`shaft_head_profile()`](#module-shaft_head_profile)
+    - [`shaft_head()`](#module-shaft_head)
+    - [`shaft()`](#module-shaft)
+
+
+## Section: Universal constants
 
 
 ### Constant: BU
@@ -84,157 +101,236 @@ Universal distance (mm) between two flat sides of the connection shaft.
 
 ---
 
-### Module: shaft\_profile()
+## Section: Stemfie Parts
+
+
+## Subsection: Beams
+
+
+### Module: beam\_block()
 
 **Usage:** 
 
-- shaft\_profile();
+- beam\_block(size, holes);
 
 **Description:** 
 
-Creates a stemfie 2D profile for creating shafts and screws.
-
-<br/>
-
-**Example 1:** 
-
-<img align="left" alt="shaft\_profile() Example 1" src="images\stemfie\shaft_profile.png" width="320" height="240">
-
-    include <stemfie.scad>
-    shaft_profile();
-
-<br clear="all" />
-
----
-
-### Module: shaft\_head\_profile()
-
-**Usage:** 
-
-- shaft\_head\_profile()
-
-**Description:** 
-
-Creats a stemfie 2D profile for creating shafts and screw heads.
-
-<br/>
-
-**Example 1:** 
-
-<img align="left" alt="shaft\_head\_profile() Example 1" src="images\stemfie\shaft_head_profile.png" width="320" height="240">
-
-    include <stemfie.scad>
-    shaft_head_profile();
-
-<br clear="all" />
-
----
-
-### Module: shaft\_head()
-
-**Usage:** 
-
-- shaft\_head()
-
-**Description:** 
-
-Creats a stemfie shaft or screw head for creating shafts and screws.
-
-<br/>
-
-**Example 1:** 
-
-<img align="left" alt="shaft\_head() Example 1" src="images\stemfie\shaft_head.png" width="320" height="240">
-
-    include <stemfie.scad>
-    shaft_head();
-
-<br clear="all" />
-
----
-
-### Module: shaft()
-
-**Usage:** 
-
-- shaft(l, beveled\_ends)
-
-**Description:** 
-
-Creates a stemfie blank shaft for creating shafts and screws.
+Creates a Stemfie beam with holes.
 
 **Arguments:** 
 
 <abbr title="These args can be used by position or by name.">By&nbsp;Position</abbr> | What it does
 -------------------- | ------------
-`l`                  | The length of the shaft in base units.
-`beveled_ends`       | Bevel ends of shaft using the global [`Chamfer`](#constant-chamfer) setting.
+`size`               | Size of block to create in block units.
+`holes`              | Array of booleans in xyz order for which directions to create holes or a single boolean for all directions.
 
 <br/>
 
-**Example 1:** Shaft with beveled ends
+**Example 1:** Standard Stemfie beam
 
-<img align="left" alt="shaft() Example 1" src="images\stemfie\shaft.png" width="320" height="240">
+<img align="left" alt="beam\_block() Example 1" src="images\stemfie\beam_block.png" width="320" height="240">
 
     include <stemfie.scad>
-    shaft(4, true);
+    beam_block(3);
 
 <br clear="all" />
 
 <br/>
 
-**Example 2:** Shaft without beveled ends
+**Example 2:** Stemfie beam with vertical holes only.
 
-<img align="left" alt="shaft() Example 2" src="images\stemfie\shaft_2.png" width="320" height="240">
+<img align="left" alt="beam\_block() Example 2" src="images\stemfie\beam_block_2.png" width="320" height="240">
 
     include <stemfie.scad>
-    shaft(4, false);
+    beam_block(3, holes = [false, false, true]);
+
+<br clear="all" />
+
+<br/>
+
+**Example 3:** Stemfie 3D "beam"
+
+<img align="left" alt="beam\_block() Example 3" src="images\stemfie\beam_block_3.png" width="320" height="240">
+
+    include <stemfie.scad>
+    beam_block([3, 2, 2]);
 
 <br clear="all" />
 
 ---
 
-### Module: shaft\_with\_hole()
+### Module: beam\_cross()
 
 **Usage:** 
 
-- shaft\_with\_hole(l, d)
+- beam\_cross(lengths);
 
 **Description:** 
 
-Stemfie blank shaft for creating shafts and screws.
+Overlaps two Stemfie beams. It can be used to create 'V', 'L', 'T' and 'X' shapes.
 
 **Arguments:** 
 
 <abbr title="These args can be used by position or by name.">By&nbsp;Position</abbr> | What it does
 -------------------- | ------------
-`l`                  | Length of shaft.
-`d`                  | Diameter of hole through shaft.
-`beveled_ends`       | Bevel ends of shaft using the global [`Chamfer`](#constant-chamfer) setting.
+`lengths`            | Array of 2, 3 or 4 integers. Lengths extending from intersection block with clockwise ordering.
 
 <br/>
 
-**Example 1:** 
+**Example 1:** 'V' beam
 
-<img align="left" alt="shaft\_with\_hole() Example 1" src="images\stemfie\shaft_with_hole.png" width="320" height="240">
+<img align="left" alt="beam\_cross() Example 1" src="images\stemfie\beam_cross.png" width="320" height="240">
 
     include <stemfie.scad>
-    shaft_with_hole(4);
+    beam_cross([3,3]);
 
 <br clear="all" />
 
 <br/>
 
-**Example 2:** 
+**Example 2:** 'L' beam
 
-<img align="left" alt="shaft\_with\_hole() Example 2" src="images\stemfie\shaft_with_hole_2.png" width="320" height="240">
+<img align="left" alt="beam\_cross() Example 2" src="images\stemfie\beam_cross_2.png" width="320" height="240">
 
     include <stemfie.scad>
-    shaft_with_hole(4, 1.2, false);
+    beam_cross([5,3]);
+
+<br clear="all" />
+
+<br/>
+
+**Example 3:** 'T' beam
+
+<img align="left" alt="beam\_cross() Example 3" src="images\stemfie\beam_cross_3.png" width="320" height="240">
+
+    include <stemfie.scad>
+    beam_cross([2,3,2]);
+
+<br clear="all" />
+
+<br/>
+
+**Example 4:** 'X' beam
+
+<img align="left" alt="beam\_cross() Example 4" src="images\stemfie\beam_cross_4.png" width="320" height="240">
+
+    include <stemfie.scad>
+    beam_cross([2,2,2,2]);
 
 <br clear="all" />
 
 ---
+
+## Subsection: Braces
+
+
+### Module: brace()
+
+**Usage:** 
+
+- brace(size, &lt;h=&gt;, &lt;holes=&gt;);
+
+**Description:** 
+
+Creates a Stemfie brace with holes.
+
+**Arguments:** 
+
+<abbr title="These args can be used by position or by name.">By&nbsp;Position</abbr> | What it does
+-------------------- | ------------
+`size`               | Length of brace to create in block units.
+`h`                  | height of brace
+`holes`              | Set to false to create blank brace.
+
+<br/>
+
+**Example 1:** Standard Stemfie brace
+
+<img align="left" alt="brace() Example 1" src="images\stemfie\brace.png" width="320" height="240">
+
+    include <stemfie.scad>
+    brace(3);
+
+<br clear="all" />
+
+<br/>
+
+**Example 2:** Double thickness blank brace
+
+<img align="left" alt="brace() Example 2" src="images\stemfie\brace_2.png" width="320" height="240">
+
+    include <stemfie.scad>
+    brace(3, h = 0.5, holes = false);
+
+<br clear="all" />
+
+---
+
+### Module: brace\_cross()
+
+**Usage:** 
+
+- brace\_cross(lengths, &lt;h&gt;);
+
+**Description:** 
+
+Overlaps two Stemfie brace. It can be used to create 'V', 'L', 'T' and 'X' shapes.
+
+**Arguments:** 
+
+<abbr title="These args can be used by position or by name.">By&nbsp;Position</abbr> | What it does
+-------------------- | ------------
+`lengths`            | Array of 2, 3 or 4 integers. Lengths extending from intersection block with clockwise ordering.
+`h`                  | Height of brace, default = 0.25BU
+
+<br/>
+
+**Example 1:** 'V' brace
+
+<img align="left" alt="brace\_cross() Example 1" src="images\stemfie\brace_cross.png" width="320" height="240">
+
+    include <stemfie.scad>
+    brace_cross([3,3]);
+
+<br clear="all" />
+
+<br/>
+
+**Example 2:** 'L' brace
+
+<img align="left" alt="brace\_cross() Example 2" src="images\stemfie\brace_cross_2.png" width="320" height="240">
+
+    include <stemfie.scad>
+    brace_cross([5,3]);
+
+<br clear="all" />
+
+<br/>
+
+**Example 3:** 'T' brace
+
+<img align="left" alt="brace\_cross() Example 3" src="images\stemfie\brace_cross_3.png" width="320" height="240">
+
+    include <stemfie.scad>
+    brace_cross([2,3,2]);
+
+<br clear="all" />
+
+<br/>
+
+**Example 4:** Double thickness 'X' brace
+
+<img align="left" alt="brace\_cross() Example 4" src="images\stemfie\brace_cross_4.png" width="320" height="240">
+
+    include <stemfie.scad>
+    brace_cross([1, 1, 1, 1], 0.5);
+
+<br clear="all" />
+
+---
+
+## Subsection: General
+
 
 ### Module: hole()
 
@@ -260,7 +356,7 @@ Create a circular standard sized hole with beveled top and bottom.
 <img align="left" alt="hole() Example 1" src="images\stemfie\hole.png" width="320" height="240">
 
     include <stemfie.scad>
-    D()
+    difference()
     {
       BU_cube();
       hole(l = 1, neg = true);
@@ -286,7 +382,7 @@ Create a circular standard sized hole with beveled top and bottom.
 <img align="left" alt="hole() Example 3" src="images\stemfie\hole_3.png" width="320" height="240">
 
     include <stemfie.scad>
-    D()
+    difference()
     {
       hole(l = 1, neg = false);
       hole(l = 1, neg = true);
@@ -344,12 +440,68 @@ Create an irregular sized hole with beveled top and bottom. Children should be a
 <img align="left" alt="cutout() Example 3" src="images\stemfie\cutout_3.png" width="320" height="240">
 
     include <stemfie.scad>
-    D()
+    difference()
     {
       cutout(l = 2, neg = false)
         square(HoleRadius * 2, center = true);
       cutout(l = 2, neg = true)
         square(HoleRadius * 2, center = true);
+    }
+
+<br clear="all" />
+
+---
+
+### Module: hole\_grid()
+
+**Usage:** 
+
+- hole\_grid(size, &lt;l=&gt;, &lt;neg=&gt;);
+
+**Description:** 
+
+Creates a rectangular array of holes centered on the origin with block unit spacing.
+
+**Arguments:** 
+
+<abbr title="These args can be used by position or by name.">By&nbsp;Position</abbr> | What it does
+-------------------- | ------------
+`size`               | List with number of holes in X and Y directions.
+`l`                  | See [`hole()`](#module-hole)
+`neg`                | See [`hole()`](#module-hole)
+
+<br/>
+
+**Example 1:** Create a 4x5 block with vertical holes.
+
+<img align="left" alt="hole\_grid() Example 1" src="images\stemfie\hole_grid.png" width="320" height="240">
+
+    include <stemfie.scad>
+    difference()
+    {
+      BU_cube([4,5,1]);
+      hole_grid([4,5]);
+    }
+
+<br clear="all" />
+
+<br/>
+
+**Example 2:** Create a 4x5x0.25 block unit plate with holes.
+
+<img align="left" alt="hole\_grid() Example 2" src="images\stemfie\hole_grid_2.png" width="320" height="240">
+
+    include <stemfie.scad>
+    difference()
+    {
+      union()
+      {
+        bevel_plate(h = 0.25)
+          offset(r = BU/2)
+            square([3 * BU, 4 * BU], center = true);
+        hole_grid([4,5], l = 0.25, neg = false);
+      }
+      hole_grid([4,5], l = 0.25);
     }
 
 <br clear="all" />
@@ -442,4 +594,123 @@ Create a 2D slot profile.
 <br clear="all" />
 
 ---
+
+## Subsection: Shafts
+
+
+### Module: shaft\_profile()
+
+**Usage:** 
+
+- shaft\_profile();
+
+**Description:** 
+
+Creates a stemfie 2D profile for creating shafts and screws.
+
+<br/>
+
+**Example 1:** 
+
+<img align="left" alt="shaft\_profile() Example 1" src="images\stemfie\shaft_profile.png" width="320" height="240">
+
+    include <stemfie.scad>
+    shaft_profile();
+
+<br clear="all" />
+
+---
+
+### Module: shaft\_head\_profile()
+
+**Usage:** 
+
+- shaft\_head\_profile()
+
+**Description:** 
+
+Creates a stemfie 2D profile for creating shafts and screw heads.
+
+<br/>
+
+**Example 1:** 
+
+<img align="left" alt="shaft\_head\_profile() Example 1" src="images\stemfie\shaft_head_profile.png" width="320" height="240">
+
+    include <stemfie.scad>
+    shaft_head_profile();
+
+<br clear="all" />
+
+---
+
+### Module: shaft\_head()
+
+**Usage:** 
+
+- shaft\_head()
+
+**Description:** 
+
+Creats a stemfie shaft or screw head for creating shafts and screws.
+
+<br/>
+
+**Example 1:** 
+
+<img align="left" alt="shaft\_head() Example 1" src="images\stemfie\shaft_head.png" width="320" height="240">
+
+    include <stemfie.scad>
+    shaft_head();
+
+<br clear="all" />
+
+---
+
+### Module: shaft()
+
+**Usage:** 
+
+- shaft(l, beveled\_ends)
+
+**Description:** 
+
+Creates a stemfie blank shaft for creating shafts and screws.
+
+**Arguments:** 
+
+<abbr title="These args can be used by position or by name.">By&nbsp;Position</abbr> | What it does
+-------------------- | ------------
+`l`                  | The length of the shaft in base units.
+`beveled_ends`       | Bevel ends of shaft using the global [`Chamfer`](#constant-chamfer) setting.
+
+<br/>
+
+**Example 1:** Shaft with beveled ends
+
+<img align="left" alt="shaft() Example 1" src="images\stemfie\shaft.png" width="320" height="240">
+
+    include <stemfie.scad>
+    shaft(4, true);
+
+<br clear="all" />
+
+<br/>
+
+**Example 2:** Shaft without beveled ends
+
+<img align="left" alt="shaft() Example 2" src="images\stemfie\shaft_2.png" width="320" height="240">
+
+    include <stemfie.scad>
+    shaft(4, false);
+
+<br clear="all" />
+
+---
+
+## Subsection: Braces
+
+
+## Subsection: Beams
+
 
