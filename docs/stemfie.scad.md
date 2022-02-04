@@ -19,15 +19,18 @@ To use, add the following lines to the beginning of your file:
 2. [Section: Stemfie Parts](#section-stemfie-parts)
     1. [Subsection: Beams](#subsection-beams)
     2. [Subsection: Braces](#subsection-braces)
-    3. [Subsection: General](#subsection-general)
-    4. [Subsection: Shafts](#subsection-shafts)
-    5. [Subsection: Braces](#subsection-braces)
-    6. [Subsection: Beams](#subsection-beams)
     
     - [`beam_block()`](#module-beam_block)
     - [`beam_cross()`](#module-beam_cross)
     - [`brace()`](#module-brace)
     - [`brace_cross()`](#module-brace_cross)
+
+3. [Section: Helper Modules](#section-helper-modules)
+    1. [Subsection: General](#subsection-general)
+    2. [Subsection: Shafts](#subsection-shafts)
+    3. [Subsection: Braces](#subsection-braces)
+    4. [Subsection: Beams](#subsection-beams)
+    
     - [`hole()`](#module-hole)
     - [`cutout()`](#module-cutout)
     - [`hole_grid()`](#module-hole_grid)
@@ -329,6 +332,9 @@ Overlaps two Stemfie brace. It can be used to create 'V', 'L', 'T' and 'X' shape
 
 ---
 
+## Section: Helper Modules
+
+
 ## Subsection: General
 
 
@@ -411,41 +417,47 @@ Create an irregular sized hole with beveled top and bottom. Children should be a
 
 <br/>
 
-**Example 1:** 
+**Example 1:** Create a brace with a slot down most of the length.
 
 <img align="left" alt="cutout() Example 1" src="images\stemfie\cutout.png" width="320" height="240">
 
     include <stemfie.scad>
-    cutout(l = 2, neg = true)
-      slot(l = 3);
+    difference()
+    {
+      union()
+      {
+        brace(4, holes = false);
+    
+        cutout(l = 0.25, neg = false)
+          Tx(BU)
+          hole_slot(l = 3);
+      }
+      cutout(l = 0.25, neg = true)
+      Tx(BU)
+      hole_slot(l = 3);
+    }
 
 <br clear="all" />
 
 <br/>
 
-**Example 2:** 
+**Example 2:** Shaft shaped hole in brace.
 
 <img align="left" alt="cutout() Example 2" src="images\stemfie\cutout_2.png" width="320" height="240">
 
     include <stemfie.scad>
-    cutout(l = 2, neg = false);
-      slot(l = 3);
-
-<br clear="all" />
-
-<br/>
-
-**Example 3:** Square hole
-
-<img align="left" alt="cutout() Example 3" src="images\stemfie\cutout_3.png" width="320" height="240">
-
-    include <stemfie.scad>
     difference()
     {
-      cutout(l = 2, neg = false)
-        square(HoleRadius * 2, center = true);
-      cutout(l = 2, neg = true)
-        square(HoleRadius * 2, center = true);
+      union()
+      {
+        brace(4, holes = false);
+          cutout(l = 0.25, neg = false)
+            offset(r=Clearance)
+              shaft_profile();
+      }
+      cutout(l = 0.25, neg = true)
+        offset(r=Clearance)
+          shaft_profile();
     }
 
 <br clear="all" />
