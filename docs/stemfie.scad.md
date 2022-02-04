@@ -1,5 +1,24 @@
 # LibFile: stemfie.scad
 
+Author: Brendon Collecutt
+
+Contact: 1976016983@qq.com
+
+This file is part of Stemfie_OpenSCAD.
+
+Stemfie_OpenSCAD is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+Stemfie_OpenSCAD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Stemfie_OpenSCAD. If not, see <https://www.gnu.org/licenses/>.
+
+Please check https://stemfie.org/license.html for more information or before using stemfie commercially.
+
+OpenSCAD script for creating Stemife.org parts.
+
+Feel free to adapt and improve and share your OpenSCAD script (please contact Paulo Kiefe)
+
+Contact: paulo.kiefe@stemfie.org (https://stemfie.org)
 
 To use, add the following lines to the beginning of your file:
 
@@ -9,6 +28,7 @@ To use, add the following lines to the beginning of your file:
 
 1. [Section: Universal constants](#section-universal-constants)
     - [`BU`](#constant-bu)
+    - [`HoleRadius`](#constant-holeradius)
     - [`FragmentNumber`](#constant-fragmentnumber)
     - [`Chamfer`](#constant-chamfer)
     - [`BevelWidth`](#constant-bevelwidth)
@@ -30,10 +50,12 @@ To use, add the following lines to the beginning of your file:
     2. [Subsection: Shafts](#subsection-shafts)
     3. [Subsection: Braces](#subsection-braces)
     4. [Subsection: Beams](#subsection-beams)
+    5. [Subsection: Block Unit Translation Shortcuts](#subsection-block-unit-translation-shortcuts)
     
     - [`hole()`](#module-hole)
     - [`cutout()`](#module-cutout)
     - [`hole_grid()`](#module-hole_grid)
+    - [`hole_list()`](#module-hole_list)
     - [`hole_slot()`](#module-hole_slot)
     - [`BU_slot()`](#module-bu_slot)
     - [`slot()`](#module-slot)
@@ -41,6 +63,15 @@ To use, add the following lines to the beginning of your file:
     - [`shaft_head_profile()`](#module-shaft_head_profile)
     - [`shaft_head()`](#module-shaft_head)
     - [`shaft()`](#module-shaft)
+    - [`BU_cube()`](#module-bu_cube)
+    - [`BU_T();`](#module-bu_t)
+    - [`BU_TK()`](#module-bu_tk)
+    - [`BU_Tx()`](#module-bu_tx)
+    - [`BU_Ty()`](#module-bu_ty)
+    - [`BU_Tz()`](#module-bu_tz)
+    - [`BU_TKx()`](#module-bu_tkx)
+    - [`BU_TKy()`](#module-bu_tky)
+    - [`BU_TKz()`](#module-bu_tkz)
 
 
 ## Section: Universal constants
@@ -51,6 +82,14 @@ To use, add the following lines to the beginning of your file:
 **Description:** 
 
 Universal voxel block unit (mm) in Stemfie (BlockUnit)
+
+---
+
+### Constant: HoleRadius
+
+**Description:** 
+
+Universal radius (mm) of the connection hole
 
 ---
 
@@ -429,12 +468,12 @@ Create an irregular sized hole with beveled top and bottom. Children should be a
         brace(4, holes = false);
     
         cutout(l = 0.25, neg = false)
-          Tx(BU)
-          hole_slot(l = 3);
+          BU_Tx(1)
+            hole_slot(l = 3);
       }
       cutout(l = 0.25, neg = true)
-      Tx(BU)
-      hole_slot(l = 3);
+        BU_Tx(1)
+          hole_slot(l = 3);
     }
 
 <br clear="all" />
@@ -468,7 +507,7 @@ Create an irregular sized hole with beveled top and bottom. Children should be a
 
 **Usage:** 
 
-- hole\_grid(size, &lt;l=&gt;, &lt;neg=&gt;);
+- hole\_grid(size, &lt;l=1&gt;, &lt;neg=true&gt;);
 
 **Description:** 
 
@@ -520,6 +559,45 @@ Creates a rectangular array of holes centered on the origin with block unit spac
 
 ---
 
+### Module: hole\_list()
+
+**Usage:** 
+
+- hole\_list(list, &lt;l=1&gt;, &lt;neg=true&gt;);
+
+**Description:** 
+
+Creates a rectangular array of holes centered on the origin with block unit spacing.
+
+**Arguments:** 
+
+<abbr title="These args can be used by position or by name.">By&nbsp;Position</abbr> | What it does
+-------------------- | ------------
+`list`               | List with location of holes by X,Y co-ordinates in block units.
+`l`                  | See [`hole()`](#module-hole)
+`neg`                | See [`hole()`](#module-hole)
+
+<br/>
+
+**Example 1:** Create brace with custom hole locations
+
+<img align="left" alt="hole\_list() Example 1" src="images\stemfie\hole_list.png" width="320" height="240">
+
+    include <stemfie.scad>
+    difference()
+    {
+      union()
+      {
+        brace(5, holes = false);
+        hole_list([[0,0],[4,0]], l = 0.25, neg = false);
+      }
+      hole_list([[0,0],[4,0]], l = 0.25);
+    }
+
+<br clear="all" />
+
+---
+
 ### Module: hole\_slot()
 
 **Usage:** 
@@ -528,7 +606,7 @@ Creates a rectangular array of holes centered on the origin with block unit spac
 
 **Description:** 
 
-Create a 2D slot profile with radius HoleRadius
+Create a 2D slot profile with radius equal to [`HoleRadius`](#constant-holeradius) and length l.
 
 **Arguments:** 
 
@@ -601,7 +679,7 @@ Create a 2D slot profile.
 <img align="left" alt="slot() Example 1" src="images\stemfie\slot.png" width="320" height="240">
 
     include <stemfie.scad>
-    slot(2);
+    slot(2, r = 2 + Clearance);
 
 <br clear="all" />
 
@@ -725,4 +803,151 @@ Creates a stemfie blank shaft for creating shafts and screws.
 
 ## Subsection: Beams
 
+
+### Module: BU\_cube()
+
+**Usage:** 
+
+- BU\_cube(size = [1,1,1]);
+
+**Description:** 
+
+Create a beveled cube of given size in block units.
+
+**Arguments:** 
+
+<abbr title="These args can be used by position or by name.">By&nbsp;Position</abbr> | What it does
+-------------------- | ------------
+`BU_cube`            | Size of cube
+
+<br/>
+
+**Example 1:** 
+
+<img align="left" alt="BU\_cube() Example 1" src="images\stemfie\bu_cube.png" width="320" height="240">
+
+    include <stemfie.scad>
+    BU_cube();
+
+<br clear="all" />
+
+<br/>
+
+**Example 2:** 
+
+<img align="left" alt="BU\_cube() Example 2" src="images\stemfie\bu_cube_2.png" width="320" height="240">
+
+    include <stemfie.scad>
+    BU_cube([3,1,1]);
+
+<br clear="all" />
+
+---
+
+## Subsection: Block Unit Translation Shortcuts
+
+Modified from Rudolf Huttary's [shortcuts.scad](https://www.thingiverse.com/thing:644830)
+
+### Module: BU\_T();
+
+**Usage:** 
+
+- BU\_T(x, y, z);
+- BU\_T([x, y, z]);
+
+**Description:** 
+
+Shortcut for translate([x * BU, y * BU, z * BU])
+
+---
+
+### Module: BU\_TK()
+
+**Usage:** 
+
+- BU\_TK(x, y, z);
+- BU\_TK([x, y, z]);
+
+**Description:** 
+
+Children at origin and translation.
+
+<br/>
+
+**Example 1:** One block unit cube centered at origin and one at [3 * BU, 0, 0]
+
+<img align="left" alt="BU\_TK() Example 1" src="images\stemfie\bu_tk.png" width="320" height="240">
+
+    include <stemfie.scad>
+    BU_TK(3, 0 , 0) BU_cube();
+
+<br clear="all" />
+
+---
+
+### Module: BU\_Tx()
+
+**Usage:** BU\\_Tx(x)
+
+
+**Description:** 
+
+Shortcut for translate([x * BU, 0, 0])
+
+---
+
+### Module: BU\_Ty()
+
+**Usage:** BU\\_Ty(y)
+
+
+**Description:** 
+
+Shortcut for translate([0, y * BU, 0])
+
+---
+
+### Module: BU\_Tz()
+
+**Usage:** BU\\_Tz(z)
+
+
+**Description:** 
+
+Shortcut for translate([0, 0, z * BU])
+
+---
+
+### Module: BU\_TKx()
+
+**Usage:** BU\\_TKx(x)
+
+
+**Description:** 
+
+Alternative for BU_TK(x=x)
+
+---
+
+### Module: BU\_TKy()
+
+**Usage:** BU\\_TKy(z)
+
+
+**Description:** 
+
+Alternative for BU_TK(y=y)
+
+---
+
+### Module: BU\_TKz()
+
+**Usage:** BU\\_TKz(z)
+
+
+**Description:** 
+
+Alternative for BU_TK(z=z)
+
+---
 

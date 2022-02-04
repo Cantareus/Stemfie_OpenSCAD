@@ -1,18 +1,25 @@
 // LibFile: stemfie.scad 
-// Includes:
-//   include <stemfie.scad>
-// DefineHeader(Label): Author
-// DefineHeader(Label): Contact
-// DefineHeader(Label): Licence
-// Description:
-//   Author: Brendon Collecutt
+//   Author: Brendon Collecutt  
+//   .
 //   Contact: 1976016983@qq.com
 //   .
-//   Licence : Creative Commons - Attribution Sharealike 4.0
+//   This file is part of Stemfie_OpenSCAD.
 //   .
-//   OpenSCAD script for creating Stemife.org parts
-//   Feel free to adapt and improve and share your OpenSCAD script (please contact Paulo Kiefe)
+//   Stemfie_OpenSCAD is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+//   .
+//   Stemfie_OpenSCAD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//   .
+//   You should have received a copy of the GNU General Public License along with Stemfie_OpenSCAD. If not, see <https://www.gnu.org/licenses/>.
+//   .
+//   Please check https://stemfie.org/license.html for more information or before using stemfie commercially.  
+//   .
+//   OpenSCAD script for creating Stemife.org parts.  
+//   .
+//   Feel free to adapt and improve and share your OpenSCAD script (please contact Paulo Kiefe)  
+//   .
 //   Contact: paulo.kiefe@stemfie.org (https://stemfie.org)
+// Includes:
+//   include <stemfie.scad>
 
 
 // Section: Universal constants
@@ -21,7 +28,7 @@
 // Description: Universal voxel block unit (mm) in Stemfie (BlockUnit)
 BU = 12.5;
 
-// Constant:HoleRadius
+// Constant: HoleRadius
 // Description: Universal radius (mm) of the connection hole
 HoleRadius = 3.5;
 
@@ -149,7 +156,7 @@ module beam_cross(lengths = [2,2,2,2])
 //   brace(3, h = 0.5, holes = false);
 module brace(size, h = 0.25, holes = true)
 {
-    Tx((size-1) * BU/2)
+    BU_Tx((size-1)/2)
     D()
     {
         U()
@@ -241,12 +248,12 @@ module hole(l = 1, neg = true)
 //       brace(4, holes = false);
 //       
 //       cutout(l = 0.25, neg = false)
-//         Tx(BU)
-//         hole_slot(l = 3);
+//         BU_Tx(1)
+//           hole_slot(l = 3);
 //     }
 //     cutout(l = 0.25, neg = true)
-//     Tx(BU)
-//     hole_slot(l = 3);
+//       BU_Tx(1)
+//         hole_slot(l = 3);
 //   }
 // Example(3D): Shaft shaped hole in brace.
 //   difference()
@@ -271,7 +278,7 @@ module cutout(l = 1, neg = true)
             LiEx(l * BU + 0.1)
                 children();
             MKz()
-                Tz((l * BU)/2)
+                BU_Tz(l/2)
                     bevel(0, true)
                         children();
                    
@@ -282,7 +289,7 @@ module cutout(l = 1, neg = true)
         Tz(-Chamfer / 2)
         LiEx(h = l * BU - Chamfer)
             offset(Chamfer * 2 + BevelWidth)children();
-        Tz((l * BU)/2)
+        BU_Tz(l/2)
             bevel(Chamfer * 2 + BevelWidth, false)
                 children();
             
@@ -291,7 +298,7 @@ module cutout(l = 1, neg = true)
 
 // Module: hole_grid()
 // Usage:
-//   hole_grid(size, <l=>, <neg=>);
+//   hole_grid(size, <l=1>, <neg=true>);
 // Description:
 //   Creates a rectangular array of holes centered on the origin with block unit spacing.
 // Arguments:
@@ -322,9 +329,9 @@ module hole_grid(size = [1,1], l = 1, neg = true)
         hole(l = l, neg = neg);
 }
 
-// Module hole_list()
+// Module: hole_list()
 // Usage:
-//   hole_list(list, <l=>, <neg=>);
+//   hole_list(list, <l=1>, <neg=true>);
 // Description:
 //   Creates a rectangular array of holes centered on the origin with block unit spacing.
 // Arguments:
@@ -344,7 +351,7 @@ module hole_grid(size = [1,1], l = 1, neg = true)
 module hole_list(list = [[0,0]], l = 1, neg = true)
 {
     for(i = list)
-        T(i.x * BU, i.y * BU, 0)
+        BU_T(i.x, i.y, 0)
             hole(l = l, neg = neg);
 }
 
@@ -353,7 +360,7 @@ module hole_list(list = [[0,0]], l = 1, neg = true)
 // Usage:
 //   hole_slot(l);
 // Description:
-//   Create a 2D slot profile with radius HoleRadius
+//   Create a 2D slot profile with radius equal to {{HoleRadius}} and length l.
 // Arguments:
 //   l = Length of slot in block units.
 // Example(2D):
@@ -385,17 +392,21 @@ module BU_slot(l)
 // Arguments:
 //   l = Length of slot in block units.
 // Example(2D):
-//   slot(2);
+//   slot(2, r = 2 + Clearance);
 module slot(l, r = BU/2)
 {
     hull()
     {
         MKx()
-            Tx(l*BU / 2 - BU / 2)
+            BU_Tx(l / 2 - 1 / 2)
                 Ci(r = r);
     }
 }
 
+//Module: bevel
+//Example(3D):
+bevel(neg = false)
+  circle(r = HoleRadius);
 module bevel(offs = 0, neg = true)
 {
     offs = offs + (neg?Chamfer:0);
@@ -442,9 +453,9 @@ module cross_helper(num = 4)
             if(num > 1)
             {
                 if(num != 2 || i != 1)
-                    Rz(num == 3 && i == 2?0:45)T(-BU)Cu(BU * 2);
+                    Rz(num == 3 && i == 2?0:45)BU_Tx(-1)Cu(BU * 2);
                 if(num != 2 || i != 0)
-                    Rz(num == 3 && i == 0?0:-45)Tx(-BU)Cu(BU * 2);
+                    Rz(num == 3 && i == 0?0:-45)BU_Tx(-1)Cu(BU * 2);
             }
         }
     }
@@ -483,7 +494,7 @@ module shaft_head_profile()
     {
         Tx(-1)
         Ci(r = BU/2);
-        Tx(BU/2)
+        BU_Tx(1/2)
         Sq(BU);
     }
 }
@@ -565,25 +576,69 @@ module brace_cross_section(h = 0.25)
     }
 }
 
-module brace_arc_blank(r, angle)
+module brace_arc(r, angle, h = 0.25, holes = 2)
 {
+    //If the remaining angle leaves a distance less than 1BU increase the angle to 360.
+    angle = ((1 - min(angle, 360)/360) * r * PI * 2 < 1)?360:min(angle, 360);
     
-    rotate_extrude(angle=angle, convexity = 4, $fn = FragmentNumber * r * 2)
-        Tx(r * BU)
-        brace_cross_section();
-    Tx(r * BU)
-    I()
+    //Reduce the number of holes if necessary to ensure spacing is always greater than 1BU.
+    holes = min(floor(angle/180 * PI * r) + 1, holes);
+    D()
     {
-        bevel_plate()
-            Ci(BU/2);
-        Ty(-BU/2)
-            Cu(BU+1, BU, BU);
+        U()
+        {
+            if(angle < 360)
+            for(i=[0, 1])
+            {
+                Rz(i * angle)
+                BU_Tx(r)
+                Rz(i * 180)
+                I()
+                {
+                    bevel_plate(h = h)
+                        Ci(BU/2);
+                    BU_Ty(-1/2)
+                        Cu(BU+1, BU, BU * h + 1);
+                }
+            }
+            
+            if(holes > 0)
+                for(n = [0:holes - 1])
+                    Rz(n * angle / (holes-(angle == 360?0:1)))
+                        BU_Tx(r)
+                        hole(l = 0.25, neg = false);
+            
+            rotate_extrude(angle=angle, convexity = 8, $fn = FragmentNumber * r * 2)
+               BU_Tx(r)
+                 brace_cross_section(h = h);
+        }
+        
+        if(holes > 0)
+                for(n = [0:holes - 1])
+                    Rz(n * angle / (holes-(angle == 360?0:1)))
+                        BU_Tx(r)
+                        hole(l = 0.25, neg = true);
+        
+        
     }
+
             
 }
 
 
 // Subsection: Beams
+
+// Module: BU_cube()
+// Usage:
+//   BU_cube(size = [1,1,1]);
+// Description:
+//   Create a beveled cube of given size in block units.
+// Arguments:
+//   BU_cube = Size of cube
+// Example(3D):
+//   BU_cube();
+// Example(3D):
+//   BU_cube([3,1,1]);
 module BU_cube(size = [1,1,1])
 {
     D()
@@ -593,6 +648,65 @@ module BU_cube(size = [1,1,1])
                 Cu(size * BU - i * Chamfer*2);
     }
 }
+
+// Subsection: Block Unit Translation Shortcuts
+//   Modified from Rudolf Huttary's [shortcuts.scad](https://www.thingiverse.com/thing:644830)
+
+// Module: BU_T();
+// Usage:
+//   BU_T(x, y, z);
+//   BU_T([x, y, z]);
+// Description:
+//   Shortcut for translate([x * BU, y * BU, z * BU])
+module BU_T(x=0, y=0, z=0){
+  translate(x[0]==undef?[x, y, z]* BU:x * BU)children(); }
+
+// Module: BU_TK()
+// Usage:
+//   BU_TK(x, y, z);
+//   BU_TK([x, y, z]);
+// Description:
+//   Children at origin and translation.
+// Example(3D): One block unit cube centered at origin and one at [3 * BU, 0, 0]
+//   BU_TK(3, 0 , 0) BU_cube();
+module BU_TK(x=0, y=0, z=0){ children(); BU_T(x, y, z) children(); }
+
+// Module: BU_Tx()
+// Usage: BU_Tx(x)
+// Description:
+//   Shortcut for translate([x * BU, 0, 0])
+module BU_Tx(x) { translate([x * BU, 0, 0])children(); }
+
+// Module: BU_Ty()
+// Usage: BU_Ty(y)
+// Description:
+//   Shortcut for translate([0, y * BU, 0])
+module BU_Ty(y) { translate([0, y * BU, 0])children(); }
+
+// Module: BU_Tz()
+// Usage: BU_Tz(z)
+// Description:
+//   Shortcut for translate([0, 0, z * BU])
+module BU_Tz(z) { translate([0, 0, z * BU])children(); }
+
+// Module: BU_TKx()
+// Usage: BU_TKx(x)
+// Description:
+//   Alternative for BU_TK(x=x)
+module BU_TKx(x) { BU_TK(x=x) children(); }
+
+// Module: BU_TKy()
+// Usage: BU_TKy(z)
+// Description:
+//   Alternative for BU_TK(y=y)
+module BU_TKy(y) { BU_TK(y=y) children(); }
+
+// Module: BU_TKz()
+// Usage: BU_TKz(z)
+// Description:
+//   Alternative for BU_TK(z=z)
+module BU_TKz(z) { BU_TK(z=z) children(); }
+
 
 /// https://www.thingiverse.com/thing:644830
 /// ShortCuts.scad 
