@@ -59,6 +59,7 @@ To use, add the following lines to the beginning of your file:
     - [`hole_slot()`](#module-hole_slot)
     - [`BU_slot()`](#module-bu_slot)
     - [`slot()`](#module-slot)
+    - [`bevel`](#module-bevel)
     - [`shaft_profile()`](#module-shaft_profile)
     - [`shaft_head_profile()`](#module-shaft_head_profile)
     - [`shaft_head()`](#module-shaft_head)
@@ -680,6 +681,34 @@ Create a 2D slot profile.
 
     include <stemfie.scad>
     slot(2, r = 2 + Clearance);
+
+<br clear="all" />
+
+---
+
+### Module: bevel
+
+**Usage:** 
+
+- bevel(offs = 0, neg = true);
+
+**Description:** 
+
+Creates a bevel from a convex 2D profile using [`Chamfer`](#constant-chamfer).
+
+<br/>
+
+**Figure 1:** Calling bevel() on a concave shape results in a convex bevel.
+
+<img align="left" alt="bevel Figure 1" src="images\stemfie\bevel_fig1.png" width="320" height="240">
+
+<br clear="all" />
+
+<br/>
+
+**Figure 2:** Instead break shape into convex shapes call bevel on each shape.
+
+<img align="left" alt="bevel Figure 2" src="images\stemfie\bevel_fig2.png" width="320" height="240">
 
 <br clear="all" />
 

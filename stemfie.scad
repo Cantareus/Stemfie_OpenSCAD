@@ -403,7 +403,46 @@ module slot(l, r = BU/2)
     }
 }
 
-//Module: bevel
+// Module: bevel
+// Usage:
+//   bevel(offs = 0, neg = true);
+// Description:
+//   Creates a bevel from a convex 2D profile using {{Chamfer}}.
+// Figure(3D): Calling bevel() on a concave shape results in a convex bevel.
+//   difference()
+//   {
+//       linear_extrude(0.25 * BU, center = true, convexity = 4)
+//       {
+//           BU_slot(3);
+//           rotate([0, 0, 90])
+//             BU_slot(3);
+//       }
+//       Tz(0.25 / 2 * BU)
+//       #bevel(offs = -Chamfer - BevelWidth)
+//       {
+//         BU_slot(3);
+//         rotate([0, 0, 90])
+//           BU_slot(3);
+//       }
+//   }
+// Figure(3D): Instead break shape into convex shapes call bevel on each shape.
+//   difference()
+//   {
+//       linear_extrude(0.25 * BU, center = true, convexity = 4)
+//       {
+//           BU_slot(3);
+//           rotate([0, 0, 90])
+//             BU_slot(3);
+//       }
+//       #Tz(0.25 / 2 * BU)
+//       {
+//         bevel(offs = -Chamfer - BevelWidth)
+//           BU_slot(3);
+//         bevel(offs = -Chamfer - BevelWidth)
+//           rotate([0, 0, 90])
+//             BU_slot(3);
+//       }
+//   }
 //Example(3D):
 //bevel(neg = true)
 //  circle(r = HoleRadius);
