@@ -54,9 +54,17 @@ Clearance = 0.19;
 // Description: Universal radius (mm) of the connection shaft
 ShaftRadius = HoleRadius - Clearance;
 
+// Constant: PinRadius
+// Description: Universal radius (mm) of the connection pin
+PinRadius = 2.40;
+
 // Constant: ShaftFlat
-// Description: Universal distance (mm) between two flat sides of the connection shaft.
+// Description: Universal distance (mm) between two flat sides of the shafts.
 ShaftFlat = 5;
+
+// Constant: FastenerFlat
+// Description: Universal distance (mm) between two flat sides of pin and screw fasteners.
+FastenerFlat = 4;
 
 $fn = FragmentNumber;
 
@@ -198,6 +206,25 @@ module brace_cross(lengths = [2,2,2,2], h = 0.25)
             brace(lengths[2] + 1, h);
         if(len(lengths) > 3)
             brace(lengths[3] + 1, h);
+    }
+}
+
+// Module: pin
+Mx()
+import("Pin CL RHD BU00.25 - SPN-PIN-0041 (stemfie.org).stl");
+
+#pin();
+
+module pin(l = 0.25)
+{
+    fastener_head();
+    
+    Ry(90)
+    {
+        LiEx(0.125 * BU,C = false)
+            fastener_profile();
+        LiEx((l + 0.25) * BU - Clearance,C = false)
+            pin_profile();
     }
 }
 
@@ -518,45 +545,76 @@ module shaft_profile()
     }
 }
 
-// Module: shaft_head_profile()
+// Module: fastener_profile()
+// Usage:
+//   fastener_profile();
+// Description:
+//   Creates a stemfie 2D profile for creating pins and screws.
+// Example(2D):
+//   fastener_profile();
+module fastener_profile()
+{
+    I()
+    {
+        Ci(r = ShaftRadius);
+        Sq(FastenerFlat, ShaftRadius * 3);
+    }
+}
+
+// Module: pin_profile()
+// Usage:
+//   pin_profile();
+// Description:
+//   Creates a stemfie 2D profile for creating pins.
+// Example(2D):
+//   pin_profile();
+module pin_profile()
+{
+    I()
+    {
+        Ci(r = PinRadius);
+        Sq(FastenerFlat, PinRadius * 3);
+    }
+}
+// Module: fastener_head_profile()
 // Usage: 
-//   shaft_head_profile()
+//   fastener_head_profile()
 // Description:
 //   Creates a stemfie 2D profile for creating shafts and screw heads.
 // Example(2D):
-//   shaft_head_profile();
-module shaft_head_profile()
+//   fastener_head_profile();
+module fastener_head_profile()
 {
     offset(r = 1)
     offset(-1)
     I()
     {
-        Tx(-1)
+        Tx(1)
         Ci(r = BU/2);
-        BU_Tx(1/2)
+        BU_Tx(-1/2)
         Sq(BU);
     }
 }
 
-// Module: shaft_head()
+// Module: fastener_head()
 // Usage: 
-//   shaft_head()
+//   fastener_head()
 // Description:
-//   Creats a stemfie shaft or screw head for creating shafts and screws.
+//   Creats a stemfie fastener head for creating pins and screws.
 // Example():
-//   shaft_head();
-module shaft_head()
+//   fastener_head();
+module fastener_head()
 {
     hull()
     {
-        LiEx(ShaftFlat - Chamfer * 2)
-            shaft_head_profile();
-        LiEx(ShaftFlat)offset(-Chamfer)
-            shaft_head_profile();
+        LiEx(FastenerFlat - Chamfer * 2)
+            fastener_head_profile();
+        LiEx(FastenerFlat)offset(-Chamfer)
+            fastener_head_profile();
     }
     Ry(90)
     LiEx(Chamfer * 2, C = false)
-    shaft_profile();
+    fastener_profile();
 }
 
 // Module: shaft()
