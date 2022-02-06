@@ -210,21 +210,54 @@ module brace_cross(lengths = [2,2,2,2], h = 0.25)
 }
 
 // Module: pin
-Mx()
-import("Pin CL RHD BU00.25 - SPN-PIN-0041 (stemfie.org).stl");
+// Usage:
+//   pin(l, <head = true>);
+// Desciption:
+//   Creates an almost standard stemfie pin.
+// Example(3D):
+//   pin(l = 1, head = true);
 
-#pin();
-
-module pin(l = 0.25)
+module pin(l = 0.25, head = true)
 {
-    fastener_head();
+    if(head)
+        fastener_head();
     
     Ry(90)
     {
-        LiEx(0.125 * BU,C = false)
+        LiEx(0.125 * BU, C = false)
             fastener_profile();
-        LiEx((l + 0.25) * BU - Clearance,C = false)
+        LiEx((l + 0.25) * BU, C = false)
             pin_profile();
+        BU_Tz(l + 0.25)
+        LiEx(0.125 * BU, C = false)
+        RKz(180)
+            I()
+        {
+            fastener_profile();
+            //My()
+            D()
+            {
+                T(ShaftRadius-FastenerFlat/2-0.3, 0)
+                    Ci(r = ShaftRadius);
+                Ty(-ShaftRadius)
+                    Sq(ShaftRadius * 2);
+            }
+        }
+        BU_Tz(l + 0.375 + Chamfer/ BU)
+        bevel(neg = false)
+        RKz(180)
+            I()
+        {
+            fastener_profile();
+            //My()
+            D()
+            {
+                T(ShaftRadius-FastenerFlat/2-0.3, 0)
+                    Ci(r = ShaftRadius);
+                Ty(-ShaftRadius)
+                    Sq(ShaftRadius * 2);
+            }
+        }
     }
 }
 
