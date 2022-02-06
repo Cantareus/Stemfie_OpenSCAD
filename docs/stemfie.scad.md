@@ -34,7 +34,9 @@ To use, add the following lines to the beginning of your file:
     - [`BevelWidth`](#constant-bevelwidth)
     - [`Clearance`](#constant-clearance)
     - [`ShaftRadius`](#constant-shaftradius)
+    - [`PinRadius`](#constant-pinradius)
     - [`ShaftFlat`](#constant-shaftflat)
+    - [`FastenerFlat`](#constant-fastenerflat)
 
 2. [Section: Stemfie Parts](#section-stemfie-parts)
     1. [Subsection: Beams](#subsection-beams)
@@ -44,6 +46,7 @@ To use, add the following lines to the beginning of your file:
     - [`beam_cross()`](#module-beam_cross)
     - [`brace()`](#module-brace)
     - [`brace_cross()`](#module-brace_cross)
+    - [`pin`](#module-pin)
 
 3. [Section: Helper Modules](#section-helper-modules)
     1. [Subsection: General](#subsection-general)
@@ -61,8 +64,10 @@ To use, add the following lines to the beginning of your file:
     - [`slot()`](#module-slot)
     - [`bevel`](#module-bevel)
     - [`shaft_profile()`](#module-shaft_profile)
-    - [`shaft_head_profile()`](#module-shaft_head_profile)
-    - [`shaft_head()`](#module-shaft_head)
+    - [`fastener_profile()`](#module-fastener_profile)
+    - [`pin_profile()`](#module-pin_profile)
+    - [`fastener_head_profile()`](#module-fastener_head_profile)
+    - [`fastener_head()`](#module-fastener_head)
     - [`shaft()`](#module-shaft)
     - [`BU_cube()`](#module-bu_cube)
     - [`BU_T();`](#module-bu_t)
@@ -136,11 +141,27 @@ Universal radius (mm) of the connection shaft
 
 ---
 
+### Constant: PinRadius
+
+**Description:** 
+
+Universal radius (mm) of the connection pin
+
+---
+
 ### Constant: ShaftFlat
 
 **Description:** 
 
-Universal distance (mm) between two flat sides of the connection shaft.
+Universal distance (mm) between two flat sides of the shafts.
+
+---
+
+### Constant: FastenerFlat
+
+**Description:** 
+
+Universal distance (mm) between two flat sides of pin and screw fasteners.
 
 ---
 
@@ -367,6 +388,29 @@ Overlaps two Stemfie brace. It can be used to create 'V', 'L', 'T' and 'X' shape
 
     include <stemfie.scad>
     brace_cross([1, 1, 1, 1], 0.5);
+
+<br clear="all" />
+
+---
+
+### Module: pin
+
+**Usage:** 
+
+- pin(l, &lt;head = true&gt;);
+
+**Description:** 
+
+Creates an almost standard stemfie pin.
+
+<br/>
+
+**Example 1:** 
+
+<img align="left" alt="pin Example 1" src="images\stemfie\pin.png" width="320" height="240">
+
+    include <stemfie.scad>
+    pin(l = 1, head = true);
 
 <br clear="all" />
 
@@ -740,11 +784,57 @@ Creates a stemfie 2D profile for creating shafts and screws.
 
 ---
 
-### Module: shaft\_head\_profile()
+### Module: fastener\_profile()
 
 **Usage:** 
 
-- shaft\_head\_profile()
+- fastener\_profile();
+
+**Description:** 
+
+Creates a stemfie 2D profile for creating pins and screws.
+
+<br/>
+
+**Example 1:** 
+
+<img align="left" alt="fastener\_profile() Example 1" src="images\stemfie\fastener_profile.png" width="320" height="240">
+
+    include <stemfie.scad>
+    fastener_profile();
+
+<br clear="all" />
+
+---
+
+### Module: pin\_profile()
+
+**Usage:** 
+
+- pin\_profile();
+
+**Description:** 
+
+Creates a stemfie 2D profile for creating pins.
+
+<br/>
+
+**Example 1:** 
+
+<img align="left" alt="pin\_profile() Example 1" src="images\stemfie\pin_profile.png" width="320" height="240">
+
+    include <stemfie.scad>
+    pin_profile();
+
+<br clear="all" />
+
+---
+
+### Module: fastener\_head\_profile()
+
+**Usage:** 
+
+- fastener\_head\_profile()
 
 **Description:** 
 
@@ -754,33 +844,33 @@ Creates a stemfie 2D profile for creating shafts and screw heads.
 
 **Example 1:** 
 
-<img align="left" alt="shaft\_head\_profile() Example 1" src="images\stemfie\shaft_head_profile.png" width="320" height="240">
+<img align="left" alt="fastener\_head\_profile() Example 1" src="images\stemfie\fastener_head_profile.png" width="320" height="240">
 
     include <stemfie.scad>
-    shaft_head_profile();
+    fastener_head_profile();
 
 <br clear="all" />
 
 ---
 
-### Module: shaft\_head()
+### Module: fastener\_head()
 
 **Usage:** 
 
-- shaft\_head()
+- fastener\_head()
 
 **Description:** 
 
-Creats a stemfie shaft or screw head for creating shafts and screws.
+Creats a stemfie fastener head for creating pins and screws.
 
 <br/>
 
 **Example 1:** 
 
-<img align="left" alt="shaft\_head() Example 1" src="images\stemfie\shaft_head.png" width="320" height="240">
+<img align="left" alt="fastener\_head() Example 1" src="images\stemfie\fastener_head.png" width="320" height="240">
 
     include <stemfie.scad>
-    shaft_head();
+    fastener_head();
 
 <br clear="all" />
 

@@ -212,7 +212,7 @@ module brace_cross(lengths = [2,2,2,2], h = 0.25)
 // Module: pin
 // Usage:
 //   pin(l, <head = true>);
-// Desciption:
+// Description:
 //   Creates an almost standard stemfie pin.
 // Example(3D):
 //   pin(l = 1, head = true);
