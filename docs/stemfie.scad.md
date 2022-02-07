@@ -46,6 +46,7 @@ To use, add the following lines to the beginning of your file:
     - [`beam_cross()`](#module-beam_cross)
     - [`brace()`](#module-brace)
     - [`brace_cross()`](#module-brace_cross)
+    - [`brace_arc()`](#module-brace_arc)
     - [`pin`](#module-pin)
 
 3. [Section: Helper Modules](#section-helper-modules)
@@ -388,6 +389,61 @@ Overlaps two Stemfie brace. It can be used to create 'V', 'L', 'T' and 'X' shape
 
     include <stemfie.scad>
     brace_cross([1, 1, 1, 1], 0.5);
+
+<br clear="all" />
+
+---
+
+### Module: brace\_arc()
+
+**Usage:** 
+
+- brace\_arc(r, angle, h = 0.25, holes = 2);
+
+**Description:** 
+
+Creates a circular arc brace. Detects when hole spacing is less than
+1 block unit and reduces the number of holes as necessary. If the angle is
+too big and the end point overlaps the start point then the angle is set to 360
+and a circular brace is created.
+
+**Arguments:** 
+
+<abbr title="These args can be used by position or by name.">By&nbsp;Position</abbr> | What it does
+-------------------- | ------------
+`r`                  | Radius in block units to the center of the brace.
+`angle`              | Angle between start and end points.
+
+<br/>
+
+**Example 1:** Holes with 60 degree spacing have 1 radius spacing.
+
+<img align="left" alt="brace\_arc() Example 1" src="images\stemfie\brace_arc.png" width="320" height="240">
+
+    include <stemfie.scad>
+    brace_arc(2, 120, holes = 3);
+
+<br clear="all" />
+
+<br/>
+
+**Example 2:** Number of holes are reduced to fit of brace.
+
+<img align="left" alt="brace\_arc() Example 2" src="images\stemfie\brace_arc_2.png" width="320" height="240">
+
+    include <stemfie.scad>
+    brace_arc(3, 360, holes = 100);
+
+<br clear="all" />
+
+<br/>
+
+**Example 3:** Angle adjusted to 360 to prevent overlap.
+
+<img align="left" alt="brace\_arc() Example 3" src="images\stemfie\brace_arc_3.png" width="320" height="240">
+
+    include <stemfie.scad>
+    brace_arc(3, 350, holes = 12);
 
 <br clear="all" />
 

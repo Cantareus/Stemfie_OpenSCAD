@@ -209,6 +209,73 @@ module brace_cross(lengths = [2,2,2,2], h = 0.25)
     }
 }
 
+// Module: brace_arc()
+// Usage:
+//   brace_arc(r, angle, h = 0.25, holes = 2);
+// Description:
+//   Creates a circular arc brace. Detects when hole spacing is less than 
+//   1 block unit and reduces the number of holes as necessary. If the angle is
+//   too big and the end point overlaps the start point then the angle is set to 360
+//   and a circular brace is created.
+// Arguments:
+//   r = Radius in block units to the center of the brace.
+//   angle = Angle between start and end points.
+// Example(3D): Holes with 60 degree spacing have 1 radius spacing.
+//   brace_arc(2, 120, holes = 3);
+// Example(3D): Number of holes are reduced to fit of brace.
+//   brace_arc(3, 360, holes = 100);
+// Example(3D): Angle adjusted to 360 to prevent overlap.
+//   brace_arc(3, 350, holes = 12);
+module brace_arc(r, angle, h = 0.25, holes = 2)
+{
+    //If the remaining angle leaves a distance less than 1BU increase the angle to 360.
+    angle = ((1 - min(angle, 360)/360) * r * PI * 2 < 1)?360:min(angle, 360);
+    
+    //Reduce the number of holes if necessary to ensure spacing is always greater than 1BU.
+    holes = min(floor(angle/180 * PI * r) + 1, holes);
+    D()
+    {
+        U()
+        {
+            if(angle < 360)
+            for(i=[0, 1])
+            {
+                Rz(i * angle)
+                BU_Tx(r)
+                Rz(i * 180)
+                I()
+                {
+                    bevel_plate(h = h)
+                        Ci(BU/2);
+                    BU_Ty(-1/2)
+                        Cu(BU+1, BU, BU * h + 1);
+                }
+            }
+            
+            if(holes > 0)
+                for(n = [0:holes - 1])
+                    Rz(n * angle / (holes-(angle == 360?0:1)))
+                        BU_Tx(r)
+                        hole(l = 0.25, neg = false);
+            
+            rotate_extrude(angle=angle, convexity = 8, $fn = FragmentNumber * r * 2)
+               BU_Tx(r)
+                 brace_cross_section(h = h);
+        }
+        
+        if(holes > 0)
+                for(n = [0:holes - 1])
+                    Rz(n * angle / (holes-(angle == 360?0:1)))
+                        BU_Tx(r)
+                        hole(l = 0.25, neg = true);
+        
+        
+    }
+
+            
+}
+
+
 // Module: pin
 // Usage:
 //   pin(l, <head = true>);
@@ -705,56 +772,6 @@ module brace_cross_section(h = 0.25)
         }
     }
 }
-
-module brace_arc(r, angle, h = 0.25, holes = 2)
-{
-    //If the remaining angle leaves a distance less than 1BU increase the angle to 360.
-    angle = ((1 - min(angle, 360)/360) * r * PI * 2 < 1)?360:min(angle, 360);
-    
-    //Reduce the number of holes if necessary to ensure spacing is always greater than 1BU.
-    holes = min(floor(angle/180 * PI * r) + 1, holes);
-    D()
-    {
-        U()
-        {
-            if(angle < 360)
-            for(i=[0, 1])
-            {
-                Rz(i * angle)
-                BU_Tx(r)
-                Rz(i * 180)
-                I()
-                {
-                    bevel_plate(h = h)
-                        Ci(BU/2);
-                    BU_Ty(-1/2)
-                        Cu(BU+1, BU, BU * h + 1);
-                }
-            }
-            
-            if(holes > 0)
-                for(n = [0:holes - 1])
-                    Rz(n * angle / (holes-(angle == 360?0:1)))
-                        BU_Tx(r)
-                        hole(l = 0.25, neg = false);
-            
-            rotate_extrude(angle=angle, convexity = 8, $fn = FragmentNumber * r * 2)
-               BU_Tx(r)
-                 brace_cross_section(h = h);
-        }
-        
-        if(holes > 0)
-                for(n = [0:holes - 1])
-                    Rz(n * angle / (holes-(angle == 360?0:1)))
-                        BU_Tx(r)
-                        hole(l = 0.25, neg = true);
-        
-        
-    }
-
-            
-}
-
 
 // Subsection: Beams
 
