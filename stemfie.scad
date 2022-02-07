@@ -108,8 +108,8 @@ module beam_block(size = [4,1,1], holes = [true, true, true])
                     bevel(offs = -Chamfer * 2 - BevelWidth, neg = true)
                     Sq(size.x * BU, size.y * BU);
             }
-            
-            hole_grid(size = [size.x, size.y], l = size.z, neg = false);
+            if(holes[i])
+                hole_grid(size = [size.x, size.y], l = size.z, neg = false);
         }
         
         for(i = [0:2])
