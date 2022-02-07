@@ -20,7 +20,7 @@
 //   Contact: paulo.kiefe@stemfie.org (https://stemfie.org)
 // Includes:
 //   include <stemfie.scad>
-
+include <includes/threads.scad>
 
 // Section: Universal constants
 
@@ -65,6 +65,10 @@ ShaftFlat = 5;
 // Constant: FastenerFlat
 // Description: Universal distance (mm) between two flat sides of pin and screw fasteners.
 FastenerFlat = 4;
+
+// Constant: ThreadPitch
+// Description: Universal pitch (mm) for Stemfie threaded fasteners
+ThreadPitch = 1.5;
 
 $fn = FragmentNumber;
 
@@ -528,6 +532,22 @@ module slot(l, r = BU/2)
             BU_Tx(l / 2 - 1 / 2)
                 Ci(r = r);
     }
+}
+
+// Module: thread()
+// Usage:
+//   thread(length, internal = false)
+// Example(3D):
+//   difference()
+//   {
+//      BU_cube([1,1,1]);
+//      thread(2, internal = true, center = true);
+//   }
+module thread(length, internal = false, center = true)
+{
+    radius = (internal?HoleRadius:ShaftRadius);
+    BU_Tz(center?-length / 2:0)
+        metric_thread (internal = internal, diameter = radius * 2, pitch=ThreadPitch, length = length * BU);
 }
 
 // Module: bevel
