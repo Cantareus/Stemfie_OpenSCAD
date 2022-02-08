@@ -108,7 +108,7 @@ module beam_block(size = [4,1,1], holes = [true, true, true])
                     bevel(offs = -Chamfer * 2 - BevelWidth, neg = true)
                     Sq(size.x * BU, size.y * BU);
             }
-            if(holes[i])
+            if(holes.z)
                 hole_grid(size = [size.x, size.y], l = size.z, neg = false);
         }
         
@@ -337,12 +337,13 @@ module pin(l = 0.25, head = true)
 
 // Module: hole()
 // Usage:
-//   hole(l, neg);
+//   hole(l = 1, neg = true, bevel = [true,true]);
 // Description:
 //   Create a circular standard sized hole with beveled top and bottom.
 // Arguments:
 //   l = The length of the hole in base units.
 //   neg = true to create hole cavity, false to create sleeve and bevel.
+//   bevel = [bevel on top, bevel on bottom]
 // Example(3D):
 //   difference()
 //   {
@@ -357,20 +358,21 @@ module pin(l = 0.25, head = true)
 //     hole(l = 1, neg = false);
 //     hole(l = 1, neg = true);
 //   }
-module hole(l = 1, neg = true)
+module hole(l = 1, neg = true, bevel = [true,true], center = true)
 {
-    cutout(l, neg)
+    cutout(l, neg, bevel, center)
         Ci(r = HoleRadius);
 }
 
 // Module: cutout()
 // Usage:
-//   cutout(l, neg);
+//   cutout(l, neg = true, bevel = [true,true]);
 // Description:
 //   Create an irregular sized hole with beveled top and bottom. Children should be a convex 2D shape.
 // Arguments:
 //   l = The length of the cutout in base units.
 //   neg = true to create cutout cavity, false to create sleeve and top bevel.
+//   bevel = [bevel on top, bevel on bottom]
 // Example(3D): Create a brace with a slot down most of the length.
 //   difference()
 //   {
@@ -400,18 +402,21 @@ module hole(l = 1, neg = true)
 //       offset(r=Clearance)
 //         shaft_profile();
 //   }
-module cutout(l = 1, neg = true)
+module cutout(l, neg = true, bevel = [true, true], center = true)
 {
+    BU_Tz(center?0:-l/2)
     if(neg)
     {
         U()
         {
             LiEx(l * BU + 0.1)
                 children();
-            MKz()
-                BU_Tz(l/2)
-                    bevel(0, true)
-                        children();
+            for(i = [0,1])
+                if(bevel[i])
+                    Sz(1 - 2 * i)
+                        BU_Tz(l/2)
+                            bevel(0, true)
+                                children();
                    
         }
     }
@@ -545,6 +550,7 @@ module slot(l, r = BU/2)
 //   }
 module thread(length, internal = false, center = true)
 {
+    $fn = 0;
     radius = (internal?HoleRadius:ShaftRadius);
     BU_Tz(center?-length / 2:0)
         metric_thread (internal = internal, diameter = radius * 2, pitch=ThreadPitch, length = length * BU);
