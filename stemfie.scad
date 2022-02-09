@@ -11,7 +11,7 @@
 //   .
 //   You should have received a copy of the GNU General Public License along with Stemfie_OpenSCAD. If not, see <https://www.gnu.org/licenses/>.
 //   .
-//   Please check https://stemfie.org/license.html for more information or before using stemfie commercially.  
+//   Please check https://stemfie.org/license for more information or before using stemfie commercially.  
 //   .
 //   OpenSCAD script for creating Stemife.org parts.  
 //   .
