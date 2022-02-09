@@ -77,7 +77,7 @@ $fn = FragmentNumber;
 
 // Module: beam_block()
 // Usage: 
-//   beam_block(size, holes);
+//   beam_block(size, holes, center);
 // Description:
 //   Creates a Stemfie beam with holes.
 // Arguments:
@@ -86,16 +86,16 @@ $fn = FragmentNumber;
 // Example(3D): Standard Stemfie beam
 //   beam_block(3);
 // Example(3D): Stemfie beam with vertical holes only.
-//   beam_block(3, holes = [false, false, true]);
+//   beam_block(3, holes = [false, false, true], center = false);
 // Example(3D): Stemfie 3D "beam"
 //   beam_block([3, 2, 2]);
-module beam_block(size = [4,1,1], holes = [true, true, true])
+module beam_block(size = [4,1,1], holes = [true, true, true], center = true)
 {
     size = is_list(size)?size:[size,1, 1];
     holes = is_list(holes)?holes:[holes,holes,holes];
     
     faceRotate = [[0,90,0],[90,0,0],[0,0,90]];
-    T((size - [1,1,1]) * BU / 2)
+    T(center?0:((size - [1,1,1]) * BU / 2))
     D()
     {
         U()
@@ -142,13 +142,13 @@ module beam_cross(lengths = [2,2,2,2])
 {
     cross_helper(len(lengths))
     {
-        beam_block([lengths[0] + 1,1,1]);
+        beam_block([lengths[0] + 1,1,1], center = false);
         if(len(lengths) > 1)
-            beam_block([lengths[1] + 1,1,1]);
+            beam_block([lengths[1] + 1,1,1], center = false);
         if(len(lengths) > 2)
-            beam_block([lengths[2] + 1,1,1]);
+            beam_block([lengths[2] + 1,1,1], center = false);
         if(len(lengths) > 3)
-            beam_block([lengths[3] + 1,1,1]);
+            beam_block([lengths[3] + 1,1,1], center = false);
     }
 }
 
