@@ -123,6 +123,35 @@ module beam_block(size = [4,1,1], holes = [true, true, true], center = true)
     }
 }
 
+// Module: beam_threaded()
+// Usage:
+//   beam_threaded(length);
+// Description:
+//   Creates a stemfie beam with threaded ends.
+// Example(3D):
+//   beam_threaded(4);
+module beam_threaded(length)
+{
+    D()
+    {
+        beam_block(length, holes = [false, true, true], center = true);
+
+        if(length > 3)
+        RKz(180)
+        Ry(90)
+        {
+            BU_Tz(length / 2)
+                thread(length = 1.5, internal = true, center = true);
+            hole(l = length - 3);
+        }
+        
+        
+    }
+    
+    /*BU_T(0,2,0)
+        beam_block(8);*/
+}
+
 // Module: beam_cross()
 // Usage: 
 //   beam_cross(lengths);

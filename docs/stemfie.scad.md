@@ -12,7 +12,7 @@ Stemfie_OpenSCAD is distributed in the hope that it will be useful, but WITHOUT 
 
 You should have received a copy of the GNU General Public License along with Stemfie_OpenSCAD. If not, see <https://www.gnu.org/licenses/>.
 
-Please check https://stemfie.org/license.html for more information or before using stemfie commercially.
+Please check https://stemfie.org/license for more information or before using stemfie commercially.
 
 OpenSCAD script for creating Stemife.org parts.
 
@@ -37,12 +37,14 @@ To use, add the following lines to the beginning of your file:
     - [`PinRadius`](#constant-pinradius)
     - [`ShaftFlat`](#constant-shaftflat)
     - [`FastenerFlat`](#constant-fastenerflat)
+    - [`ThreadPitch`](#constant-threadpitch)
 
 2. [Section: Stemfie Parts](#section-stemfie-parts)
     1. [Subsection: Beams](#subsection-beams)
     2. [Subsection: Braces](#subsection-braces)
     
     - [`beam_block()`](#module-beam_block)
+    - [`beam_threaded()`](#module-beam_threaded)
     - [`beam_cross()`](#module-beam_cross)
     - [`brace()`](#module-brace)
     - [`brace_cross()`](#module-brace_cross)
@@ -63,6 +65,7 @@ To use, add the following lines to the beginning of your file:
     - [`hole_slot()`](#module-hole_slot)
     - [`BU_slot()`](#module-bu_slot)
     - [`slot()`](#module-slot)
+    - [`thread()`](#module-thread)
     - [`bevel`](#module-bevel)
     - [`shaft_profile()`](#module-shaft_profile)
     - [`fastener_profile()`](#module-fastener_profile)
@@ -166,6 +169,14 @@ Universal distance (mm) between two flat sides of pin and screw fasteners.
 
 ---
 
+### Constant: ThreadPitch
+
+**Description:** 
+
+Universal pitch (mm) for Stemfie threaded fasteners
+
+---
+
 ## Section: Stemfie Parts
 
 
@@ -176,7 +187,7 @@ Universal distance (mm) between two flat sides of pin and screw fasteners.
 
 **Usage:** 
 
-- beam\_block(size, holes);
+- beam\_block(size, holes, center);
 
 **Description:** 
 
@@ -207,7 +218,7 @@ Creates a Stemfie beam with holes.
 <img align="left" alt="beam\_block() Example 2" src="images\stemfie\beam_block_2.png" width="320" height="240">
 
     include <stemfie.scad>
-    beam_block(3, holes = [false, false, true]);
+    beam_block(3, holes = [false, false, true], center = false);
 
 <br clear="all" />
 
@@ -219,6 +230,29 @@ Creates a Stemfie beam with holes.
 
     include <stemfie.scad>
     beam_block([3, 2, 2]);
+
+<br clear="all" />
+
+---
+
+### Module: beam\_threaded()
+
+**Usage:** 
+
+- beam\_threaded(length);
+
+**Description:** 
+
+Creates a stemfie beam with threaded ends.
+
+<br/>
+
+**Example 1:** 
+
+<img align="left" alt="beam\_threaded() Example 1" src="images\stemfie\beam_threaded.png" width="320" height="240">
+
+    include <stemfie.scad>
+    beam_threaded(4);
 
 <br clear="all" />
 
@@ -482,7 +516,7 @@ Creates an almost standard stemfie pin.
 
 **Usage:** 
 
-- hole(l, neg);
+- hole(l = 1, neg = true, bevel = [true,true]);
 
 **Description:** 
 
@@ -494,6 +528,7 @@ Create a circular standard sized hole with beveled top and bottom.
 -------------------- | ------------
 `l`                  | The length of the hole in base units.
 `neg`                | true to create hole cavity, false to create sleeve and bevel.
+`bevel`              | [bevel on top, bevel on bottom]
 
 <br/>
 
@@ -542,7 +577,7 @@ Create a circular standard sized hole with beveled top and bottom.
 
 **Usage:** 
 
-- cutout(l, neg);
+- cutout(l, neg = true, bevel = [true,true]);
 
 **Description:** 
 
@@ -554,6 +589,7 @@ Create an irregular sized hole with beveled top and bottom. Children should be a
 -------------------- | ------------
 `l`                  | The length of the cutout in base units.
 `neg`                | true to create cutout cavity, false to create sleeve and top bevel.
+`bevel`              | [bevel on top, bevel on bottom]
 
 <br/>
 
@@ -781,6 +817,29 @@ Create a 2D slot profile.
 
     include <stemfie.scad>
     slot(2, r = 2 + Clearance);
+
+<br clear="all" />
+
+---
+
+### Module: thread()
+
+**Usage:** 
+
+- thread(length, internal = false)
+
+<br/>
+
+**Example 1:** 
+
+<img align="left" alt="thread() Example 1" src="images\stemfie\thread.png" width="320" height="240">
+
+    include <stemfie.scad>
+    difference()
+    {
+       BU_cube([1,1,1]);
+       thread(2, internal = true, center = true);
+    }
 
 <br clear="all" />
 
