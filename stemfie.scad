@@ -128,8 +128,8 @@ module beam_block(size = [4,1,1], holes = [true, true, true], center = true)
 //   beam_threaded(length);
 // Description:
 //   Creates a stemfie beam with threaded ends.
-// Example(3D):
-//   beam_threaded(4);
+// Example(3D, Render):
+//    beam_threaded(4);
 module beam_threaded(length)
 {
     D()
@@ -140,8 +140,9 @@ module beam_threaded(length)
         RKz(180)
         Ry(90)
         {
-            BU_Tz(length / 2)
-                thread(length = 1.5, internal = true, center = true);
+            BU_Tz(length / 2 + 0.1)
+                Rx(180)
+                    thread(length = 1.5, internal = true, center = false);
             hole(l = length - 3);
         }
         
