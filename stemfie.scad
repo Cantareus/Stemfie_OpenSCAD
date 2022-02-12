@@ -145,12 +145,7 @@ module beam_threaded(length)
                     thread(length = 1.5, internal = true, center = false);
             hole(l = length - 3);
         }
-        
-        
     }
-    
-    /*BU_T(0,2,0)
-        beam_block(8);*/
 }
 
 // Module: beam_cross()
@@ -309,16 +304,50 @@ module brace_arc(r, angle, h = 0.25, holes = 2)
             
 }
 
+// Subsection: Fasteners
+
+// Module: screw()
+// Usage:
+//   screw(thread_length, shaft_length = 0.125, screw_head = true);
+// Description:
+//   Creates a stemfie screw
+// Arguments
+//   thread_length = length of threaded part of the screw in block units.
+//   shaft_length = length of unthreaded part of the screw in block units.
+//   screw_head = generate screw head
+// Example(3D): Add 0.125 BU of unthreaded shaft to get that standard look.
+//   screw(1.375, 0.125);
+// Example(3D):
+//   screw(0.5, 3);
+// Example(3D):
+//   screw(1.5, screw_head = false);
+module screw(thread_length, shaft_length = 0, screw_head = true)
+{
+  if(screw_head)
+    fastener_head();
+
+  Ry(90)
+  {    
+    LiEx(shaft_length * BU, C = false)
+      fastener_profile();
+    BU_Tz(shaft_length)
+    I()
+    {   
+      LiEx(thread_length * BU, C = false)
+        fastener_profile();
+      thread(thread_length, center = false);
+    }
+  }
+}
 
 // Module: pin
 // Usage:
-//   pin(l, <head = true>);
+//   pin(length, head = true);
 // Description:
 //   Creates an almost standard stemfie pin.
 // Example(3D):
-//   pin(l = 1, head = true);
-
-module pin(l = 0.25, head = true)
+//   pin(length = 1, head = true);
+module pin(length = 0.25, head = true)
 {
     if(head)
         fastener_head();
@@ -327,9 +356,9 @@ module pin(l = 0.25, head = true)
     {
         LiEx(0.125 * BU, C = false)
             fastener_profile();
-        LiEx((l + 0.25) * BU, C = false)
+        LiEx((length + 0.25) * BU, C = false)
             pin_profile();
-        BU_Tz(l + 0.25)
+        BU_Tz(length + 0.25)
         LiEx(0.125 * BU, C = false)
         RKz(180)
             I()
@@ -344,13 +373,12 @@ module pin(l = 0.25, head = true)
                     Sq(ShaftRadius * 2);
             }
         }
-        BU_Tz(l + 0.375 + Chamfer/ BU)
+        BU_Tz(length + 0.375 + Chamfer/ BU)
         bevel(neg = false)
         RKz(180)
             I()
         {
             fastener_profile();
-            //My()
             D()
             {
                 T(ShaftRadius-FastenerFlat/2-0.3, 0)
@@ -768,38 +796,40 @@ module fastener_head()
         LiEx(FastenerFlat)offset(-Chamfer)
             fastener_head_profile();
     }
-    Ry(90)
+    Ry(-90)
     LiEx(Chamfer * 2, C = false)
     fastener_profile();
 }
 
 // Module: shaft()
 // Usage:
-//   shaft(l, beveled_ends)
+//   shaft(length, beveled_ends)
 // Description:
 //   Creates a stemfie blank shaft for creating shafts and screws.
 // Arguments:
-//   l = The length of the shaft in base units.
+//   length = The length of the shaft in base units.
 //   beveled_ends = Bevel ends of shaft using the global {{Chamfer}} setting.
 // Example(3D): Shaft with beveled ends
 //   shaft(4, true);
 // Example(3D): Shaft without beveled ends
 //   shaft(4, false);
-module shaft(l = 1, beveled_ends = true)
+module shaft(length = 1, beveled_ends = true, center = true)
 {
+    if(length > 0)
     Ry(90)
     D()
     {
+        BU_Tz(center?0:length/2)
         U()
         {
-            LiEx(l * BU - (beveled_ends?Chamfer * 2:0))
+            LiEx(length * BU - (beveled_ends?Chamfer * 2:0))
             {
                 shaft_profile();
             }
             
             if(beveled_ends)
             MKz()
-            Tz(l * BU / 2)
+            Tz(length * BU / 2)
                 bevel(neg = false)
                     shaft_profile();
         }

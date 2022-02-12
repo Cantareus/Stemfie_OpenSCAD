@@ -42,6 +42,7 @@ To use, add the following lines to the beginning of your file:
 2. [Section: Stemfie Parts](#section-stemfie-parts)
     1. [Subsection: Beams](#subsection-beams)
     2. [Subsection: Braces](#subsection-braces)
+    3. [Subsection: Fasteners](#subsection-fasteners)
     
     - [`beam_block()`](#module-beam_block)
     - [`beam_threaded()`](#module-beam_threaded)
@@ -49,6 +50,7 @@ To use, add the following lines to the beginning of your file:
     - [`brace()`](#module-brace)
     - [`brace_cross()`](#module-brace_cross)
     - [`brace_arc()`](#module-brace_arc)
+    - [`screw()`](#module-screw)
     - [`pin`](#module-pin)
 
 3. [Section: Helper Modules](#section-helper-modules)
@@ -483,11 +485,59 @@ and a circular brace is created.
 
 ---
 
+## Subsection: Fasteners
+
+
+### Module: screw()
+
+**Usage:** 
+
+- screw(thread\_length, shaft\_length = 0.125, screw\_head = true);
+
+**Description:** 
+
+Creates a stemfie screw
+
+<br/>
+
+**Example 1:** Add 0.125 BU of unthreaded shaft to get that standard look.
+
+<img align="left" alt="screw() Example 1" src="images\stemfie\screw.png" width="320" height="240">
+
+    include <stemfie.scad>
+    screw(1.375, 0.125);
+
+<br clear="all" />
+
+<br/>
+
+**Example 2:** 
+
+<img align="left" alt="screw() Example 2" src="images\stemfie\screw_2.png" width="320" height="240">
+
+    include <stemfie.scad>
+    screw(0.5, 3);
+
+<br clear="all" />
+
+<br/>
+
+**Example 3:** 
+
+<img align="left" alt="screw() Example 3" src="images\stemfie\screw_3.png" width="320" height="240">
+
+    include <stemfie.scad>
+    screw(1.5, screw_head = false);
+
+<br clear="all" />
+
+---
+
 ### Module: pin
 
 **Usage:** 
 
-- pin(l, &lt;head = true&gt;);
+- pin(length, head = true);
 
 **Description:** 
 
@@ -500,7 +550,7 @@ Creates an almost standard stemfie pin.
 <img align="left" alt="pin Example 1" src="images\stemfie\pin.png" width="320" height="240">
 
     include <stemfie.scad>
-    pin(l = 1, head = true);
+    pin(length = 1, head = true);
 
 <br clear="all" />
 
@@ -995,7 +1045,7 @@ Creats a stemfie fastener head for creating pins and screws.
 
 **Usage:** 
 
-- shaft(l, beveled\_ends)
+- shaft(length, beveled\_ends)
 
 **Description:** 
 
@@ -1005,7 +1055,7 @@ Creates a stemfie blank shaft for creating shafts and screws.
 
 <abbr title="These args can be used by position or by name.">By&nbsp;Position</abbr> | What it does
 -------------------- | ------------
-`l`                  | The length of the shaft in base units.
+`length`             | The length of the shaft in base units.
 `beveled_ends`       | Bevel ends of shaft using the global [`Chamfer`](#constant-chamfer) setting.
 
 <br/>
