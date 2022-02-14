@@ -1026,7 +1026,7 @@ Creates a stemfie 2D profile for creating shafts and screw heads.
 
 **Description:** 
 
-Creats a stemfie fastener head for creating pins and screws.
+Creates a stemfie fastener head for creating pins and screws.
 
 <br/>
 

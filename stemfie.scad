@@ -784,21 +784,42 @@ module fastener_head_profile()
 // Usage: 
 //   fastener_head()
 // Description:
-//   Creats a stemfie fastener head for creating pins and screws.
+//   Creates a stemfie fastener head for creating pins and screws.
 // Example():
 //   fastener_head();
 module fastener_head()
 {
-    hull()
+  groove_d = 0.81;
+  groove_offset = 1.75;
+
+  D()
+  {
+    U()
     {
-        LiEx(FastenerFlat - Chamfer * 2)
-            fastener_head_profile();
-        LiEx(FastenerFlat)offset(-Chamfer)
-            fastener_head_profile();
+      hull()
+      {
+          LiEx(FastenerFlat - Chamfer * 2)
+              fastener_head_profile();
+          LiEx(FastenerFlat)offset(-Chamfer)
+              fastener_head_profile();
+      }
+      Ry(-90)
+        LiEx(Chamfer * 2, C = false)
+          fastener_profile();
     }
-    Ry(-90)
-    LiEx(Chamfer * 2, C = false)
-    fastener_profile();
+    Tx(-groove_offset)
+    {
+      MKz()
+      Tz(FastenerFlat/2)
+    
+      
+        Rx(90)
+          Sx(0.8)
+            Cy(r = groove_d, h = 20, $fn = 4);
+      cutout(l = FastenerFlat/BU)
+        Ci(r = 1);
+    }
+  }
 }
 
 // Module: shaft()
