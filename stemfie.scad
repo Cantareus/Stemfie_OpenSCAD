@@ -198,12 +198,13 @@ module brace(size, h = 0.25, holes = true)
     {
         U()
         {
-            bevel_plate(h)BU_slot(size);
+            bevel_plate(h)
+              BU_slot(size);
             if(holes)
-            hole_grid([size,1],h,false);
+              hole_grid([size,1],h,false);
         }
         if(holes)
-        hole_grid([size,1],h,true);
+          hole_grid([size,1],h,true);
     }
     
 }
@@ -310,7 +311,7 @@ module brace_arc(r, angle, h = 0.25, holes = 2)
 // Usage:
 //   screw(thread_length, shaft_length = 0.125, screw_head = true);
 // Description:
-//   Creates a stemfie screw
+//   Creates a stemfie screw.
 // Arguments
 //   thread_length = length of threaded part of the screw in block units.
 //   shaft_length = length of unthreaded part of the screw in block units.
@@ -327,15 +328,28 @@ module screw(thread_length, shaft_length = 0, screw_head = true)
     fastener_head();
 
   Ry(90)
-  {    
+  {
     LiEx(shaft_length * BU, C = false)
       fastener_profile();
     BU_Tz(shaft_length)
+    
     I()
     {   
       LiEx(thread_length * BU, C = false)
         fastener_profile();
-      thread(thread_length, center = false);
+      U()
+      {
+        Cy(h = thread_length * BU - ShaftRadius / 3.9, r = ShaftRadius, C = false);
+        Tz(thread_length * BU - ShaftRadius / 3.9)
+        D()
+        {
+          Cy(h = ShaftRadius / 3.9, r1 = ShaftRadius, r2 = 0, C = false);
+          Tz(0.01)
+          Cy(h = ShaftRadius / 3.9, r1 = 0.3, r2 = 1.2, C = false);
+        }
+      }
+      Rz(165)
+        thread(thread_length, center = false);
     }
   }
 }
@@ -388,6 +402,77 @@ module pin(length = 0.25, head = true)
             }
         }
     }
+}
+
+// Module: nut()
+// Usage:
+//   nut_open(length = 5/BU, center = true);
+// Description:
+//   Creates a threaded open nut.
+// Example(3D): Standard 5mm open nut
+//   nut_open();
+// Example(3D): 1 block unit threaded nut.
+//   nut_open(1);
+module nut_open(length = 5/BU, center = true)
+{
+  BU_Tz(center?0:length/2)
+  D()
+  {
+    nut_blank(length);
+    
+    thread(length = length, internal = true, bevel = true);
+
+    BU_Tz((0.25 - length)/2)
+      rotate_extrude(angle = 360)
+        BU_Tx(0.5)
+          Ci(r = 0.4, $fn=4);
+  }
+}
+
+// Subsection: Washers and Spacers
+// Module: spacer()
+// Usage:
+//   module spacer(length = 0.25, center = true);
+// Description:
+//   Creates a free spacer to fit over a shaft or fastener.
+// Example(3D):
+//   spacer(length = 0.5, center = false);
+module spacer(length = 0.25, center = true)
+{
+  D()
+  {
+    U()
+    {
+      bevel_plate(h = length, center = center)
+        Ci(d = BU);
+      hole(l = length, neg = false, center = center);
+    }
+    hole(l = length, neg = true, center = center);
+  }
+}
+
+// Module: fixed_washer()
+// Usage:
+//   fixed_washer(length = 0.25, center = true);
+// Description:
+//   Creates a fixed washer to fit a fastener.
+// Example(3D): Standard 0.25 block unit fixed washer
+//   fixed_washer();
+// Example(3D): 10mm fixed washer
+//   fixed_washer(10 / BU);
+module fixed_washer(length = 0.25, center = true)
+{
+
+  D()
+  {
+    nut_blank(length = length, center = center);
+    cutout(l = length, center = center)
+    {
+      offset(r = Clearance)
+      fastener_profile();
+    }
+  }
+  
 }
 
 // Section: Helper Modules
@@ -462,7 +547,7 @@ module hole(l = 1, neg = true, bevel = [true,true], center = true)
 //   }
 module cutout(l, neg = true, bevel = [true, true], center = true)
 {
-    BU_Tz(center?0:-l/2)
+    BU_Tz(center?0:l/2)
     if(neg)
     {
         U()
@@ -606,12 +691,23 @@ module slot(l, r = BU/2)
 //      BU_cube([1,1,1]);
 //      thread(2, internal = true, center = true);
 //   }
-module thread(length, internal = false, center = true)
+module thread(length, internal = false, bevel = false, center = true)
 {
-    $fn = 0;
-    radius = (internal?HoleRadius:ShaftRadius);
+    radius = (internal?HoleRadius:(ShaftRadius - 0.2));
     BU_Tz(center?-length / 2:0)
-        metric_thread (internal = internal, diameter = radius * 2, pitch=ThreadPitch, length = length * BU);
+    {
+      metric_thread (internal = internal, diameter = radius * 2, pitch=ThreadPitch, length = length * BU);
+      if(bevel && internal)
+      {
+        
+        Sz(-1)
+        Tz(-radius/4 + 0.1)
+        Cy(r1 = radius/2, r2 = radius * 1.15, h = radius/2);
+        BU_Tz(length)
+          Tz(-radius/4 + 0.1)
+            Cy(r1 = radius/2, r2 = radius * 1.15, h = radius/2);
+      }
+    }
 }
 
 // Module: bevel
@@ -654,9 +750,9 @@ module thread(length, internal = false, center = true)
 //             BU_slot(3);
 //       }
 //   }
-//Example(3D):
-//bevel(neg = true)
-//  circle(r = HoleRadius);
+// Example(3D):
+//   bevel(neg = false)
+//     circle(r = HoleRadius);
 module bevel(offs = 0, neg = true)
 {
     offs = offs + (neg?Chamfer:0);
@@ -676,19 +772,20 @@ module bevel(offs = 0, neg = true)
     }
 }
 
-module bevel_plate(h = 0.25)
+module bevel_plate(h = 0.25, top_bevel = true, center = true)
 {
+  BU_Tz(center?0:(h / 2))
     D()
     {
-        hull()
-        {
-            LiEx(BU * h - Chamfer * 2)children();
-            LiEx(BU * h)offset(r = -Chamfer)children();
-        }
+      hull()
+      {
+        LiEx(BU * h - Chamfer * 2)children();
+        LiEx(BU * h)offset(r = -Chamfer)children();
+      }
 
-        Tz(BU * h / 2)
-            bevel(-Chamfer * 2 - BevelWidth, true)children();
-
+      if(top_bevel)
+        BU_Tz(h / 2)
+          bevel(-Chamfer * 2 - BevelWidth, true)children();
     }
 }
 
@@ -857,6 +954,31 @@ module shaft(length = 1, beveled_ends = true, center = true)
     }
 }
 
+// Subsection: Nuts and Washers
+
+// Module: nut_blank()
+// Usage:
+//   nut_blank(length = 0.25, center = true)
+// Description:
+//   Creates a nut template with solid interior that can be used to 
+//   create nuts and washers.
+// Example(3D):
+//   nut_blank(0.5);
+module nut_blank(length = 0.25, center = true)
+{
+  BU_Tz(center?0:length/2)
+  D()
+  {
+    bevel_plate(h = length, top_bevel = false)
+      Ci(d = BU);
+    Rz(45)
+    rotN(N = 4, r = BU * 0.9)
+      cutout(l = length)
+        Ci(d = BU);
+  }
+}
+
+
 // Subsection: Braces
 module brace_cross_section(h = 0.25)
 {
@@ -906,7 +1028,7 @@ module BU_cube(size = [1,1,1])
 // Subsection: Block Unit Translation Shortcuts
 //   Modified from Rudolf Huttary's [shortcuts.scad](https://www.thingiverse.com/thing:644830)
 
-// Module: BU_T();
+// Module: BU_T()
 // Usage:
 //   BU_T(x, y, z);
 //   BU_T([x, y, z]);

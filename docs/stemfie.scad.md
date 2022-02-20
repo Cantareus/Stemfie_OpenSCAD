@@ -43,6 +43,7 @@ To use, add the following lines to the beginning of your file:
     1. [Subsection: Beams](#subsection-beams)
     2. [Subsection: Braces](#subsection-braces)
     3. [Subsection: Fasteners](#subsection-fasteners)
+    4. [Subsection: Washers and Spacers](#subsection-washers-and-spacers)
     
     - [`beam_block()`](#module-beam_block)
     - [`beam_threaded()`](#module-beam_threaded)
@@ -52,13 +53,17 @@ To use, add the following lines to the beginning of your file:
     - [`brace_arc()`](#module-brace_arc)
     - [`screw()`](#module-screw)
     - [`pin`](#module-pin)
+    - [`nut()`](#module-nut)
+    - [`spacer()`](#module-spacer)
+    - [`fixed_washer()`](#module-fixed_washer)
 
 3. [Section: Helper Modules](#section-helper-modules)
     1. [Subsection: General](#subsection-general)
     2. [Subsection: Shafts](#subsection-shafts)
-    3. [Subsection: Braces](#subsection-braces)
-    4. [Subsection: Beams](#subsection-beams)
-    5. [Subsection: Block Unit Translation Shortcuts](#subsection-block-unit-translation-shortcuts)
+    3. [Subsection: Nuts and Washers](#subsection-nuts-and-washers)
+    4. [Subsection: Braces](#subsection-braces)
+    5. [Subsection: Beams](#subsection-beams)
+    6. [Subsection: Block Unit Translation Shortcuts](#subsection-block-unit-translation-shortcuts)
     
     - [`hole()`](#module-hole)
     - [`cutout()`](#module-cutout)
@@ -75,8 +80,9 @@ To use, add the following lines to the beginning of your file:
     - [`fastener_head_profile()`](#module-fastener_head_profile)
     - [`fastener_head()`](#module-fastener_head)
     - [`shaft()`](#module-shaft)
+    - [`nut_blank()`](#module-nut_blank)
     - [`BU_cube()`](#module-bu_cube)
-    - [`BU_T();`](#module-bu_t)
+    - [`BU_T()`](#module-bu_t)
     - [`BU_TK()`](#module-bu_tk)
     - [`BU_Tx()`](#module-bu_tx)
     - [`BU_Ty()`](#module-bu_ty)
@@ -496,7 +502,7 @@ and a circular brace is created.
 
 **Description:** 
 
-Creates a stemfie screw
+Creates a stemfie screw.
 
 <br/>
 
@@ -551,6 +557,100 @@ Creates an almost standard stemfie pin.
 
     include <stemfie.scad>
     pin(length = 1, head = true);
+
+<br clear="all" />
+
+---
+
+### Module: nut()
+
+**Usage:** 
+
+- nut\_open(length = 5/BU, center = true);
+
+**Description:** 
+
+Creates a threaded open nut.
+
+<br/>
+
+**Example 1:** Standard 5mm open nut
+
+<img align="left" alt="nut() Example 1" src="images\stemfie\nut.png" width="320" height="240">
+
+    include <stemfie.scad>
+    nut_open();
+
+<br clear="all" />
+
+<br/>
+
+**Example 2:** 1 block unit threaded nut.
+
+<img align="left" alt="nut() Example 2" src="images\stemfie\nut_2.png" width="320" height="240">
+
+    include <stemfie.scad>
+    nut_open(1);
+
+<br clear="all" />
+
+---
+
+## Subsection: Washers and Spacers
+
+
+### Module: spacer()
+
+**Usage:** 
+
+- module spacer(length = 0.25, center = true);
+
+**Description:** 
+
+Creates a free spacer to fit over a shaft or fastener.
+
+<br/>
+
+**Example 1:** 
+
+<img align="left" alt="spacer() Example 1" src="images\stemfie\spacer.png" width="320" height="240">
+
+    include <stemfie.scad>
+    spacer(length = 0.5, center = false);
+
+<br clear="all" />
+
+---
+
+### Module: fixed\_washer()
+
+**Usage:** 
+
+- fixed\_washer(length = 0.25, center = true);
+
+**Description:** 
+
+Creates a fixed washer to fit a fastener.
+
+<br/>
+
+**Example 1:** Standard 0.25 block unit fixed washer
+
+<img align="left" alt="fixed\_washer() Example 1" src="images\stemfie\fixed_washer.png" width="320" height="240">
+
+    include <stemfie.scad>
+    fixed_washer();
+
+<br clear="all" />
+
+<br/>
+
+**Example 2:** 10mm fixed washer
+
+<img align="left" alt="fixed\_washer() Example 2" src="images\stemfie\fixed_washer_2.png" width="320" height="240">
+
+    include <stemfie.scad>
+    fixed_washer(10 / BU);
 
 <br clear="all" />
 
@@ -921,6 +1021,18 @@ Creates a bevel from a convex 2D profile using [`Chamfer`](#constant-chamfer).
 
 <br clear="all" />
 
+<br/>
+
+**Example 1:** 
+
+<img align="left" alt="bevel Example 1" src="images\stemfie\bevel.png" width="320" height="240">
+
+    include <stemfie.scad>
+    bevel(neg = false)
+      circle(r = HoleRadius);
+
+<br clear="all" />
+
 ---
 
 ## Subsection: Shafts
@@ -1082,6 +1194,33 @@ Creates a stemfie blank shaft for creating shafts and screws.
 
 ---
 
+## Subsection: Nuts and Washers
+
+
+### Module: nut\_blank()
+
+**Usage:** 
+
+- nut\_blank(length = 0.25, center = true)
+
+**Description:** 
+
+Creates a nut template with solid interior that can be used to
+create nuts and washers.
+
+<br/>
+
+**Example 1:** 
+
+<img align="left" alt="nut\_blank() Example 1" src="images\stemfie\nut_blank.png" width="320" height="240">
+
+    include <stemfie.scad>
+    nut_blank(0.5);
+
+<br clear="all" />
+
+---
+
 ## Subsection: Braces
 
 
@@ -1132,7 +1271,7 @@ Create a beveled cube of given size in block units.
 
 Modified from Rudolf Huttary's [shortcuts.scad](https://www.thingiverse.com/thing:644830)
 
-### Module: BU\_T();
+### Module: BU\_T()
 
 **Usage:** 
 
