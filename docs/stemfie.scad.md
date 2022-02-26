@@ -666,7 +666,7 @@ Creates a fixed washer to fit a fastener.
 
 **Usage:** 
 
-- hole(l = 1, neg = true, bevel = [true,true]);
+- hole(depth = 1, neg = true, bevel = [true,true]);
 
 **Description:** 
 
@@ -676,7 +676,7 @@ Create a circular standard sized hole with beveled top and bottom.
 
 <abbr title="These args can be used by position or by name.">By&nbsp;Position</abbr> | What it does
 -------------------- | ------------
-`l`                  | The length of the hole in base units.
+`depth`              | The depth of the hole in base units.
 `neg`                | true to create hole cavity, false to create sleeve and bevel.
 `bevel`              | [bevel on top, bevel on bottom]
 
@@ -690,7 +690,7 @@ Create a circular standard sized hole with beveled top and bottom.
     difference()
     {
       BU_cube();
-      hole(l = 1, neg = true);
+      hole(depth = 1, neg = true);
     }
 
 <br clear="all" />
@@ -702,7 +702,7 @@ Create a circular standard sized hole with beveled top and bottom.
 <img align="left" alt="hole() Example 2" src="images\stemfie\hole_2.png" width="320" height="240">
 
     include <stemfie.scad>
-    hole(l = 1, neg = false);
+    hole(depth = 1, neg = false);
 
 <br clear="all" />
 
@@ -715,8 +715,8 @@ Create a circular standard sized hole with beveled top and bottom.
     include <stemfie.scad>
     difference()
     {
-      hole(l = 1, neg = false);
-      hole(l = 1, neg = true);
+      hole(depth = 1, neg = false);
+      hole(depth = 1, neg = true);
     }
 
 <br clear="all" />
@@ -727,7 +727,7 @@ Create a circular standard sized hole with beveled top and bottom.
 
 **Usage:** 
 
-- cutout(l, neg = true, bevel = [true,true]);
+- cutout(depth, neg = true, bevel = [true,true]);
 
 **Description:** 
 
@@ -737,7 +737,7 @@ Create an irregular sized hole with beveled top and bottom. Children should be a
 
 <abbr title="These args can be used by position or by name.">By&nbsp;Position</abbr> | What it does
 -------------------- | ------------
-`l`                  | The length of the cutout in base units.
+`depth`              | The depth of the cutout in base units.
 `neg`                | true to create cutout cavity, false to create sleeve and top bevel.
 `bevel`              | [bevel on top, bevel on bottom]
 
@@ -754,13 +754,13 @@ Create an irregular sized hole with beveled top and bottom. Children should be a
       {
         brace(4, holes = false);
     
-        cutout(l = 0.25, neg = false)
+        cutout(depth = 0.25, neg = false)
           BU_Tx(1)
-            hole_slot(l = 3);
+            hole_slot(length = 3);
       }
-      cutout(l = 0.25, neg = true)
+      cutout(depth = 0.25, neg = true)
         BU_Tx(1)
-          hole_slot(l = 3);
+          hole_slot(length = 3);
     }
 
 <br clear="all" />
@@ -777,11 +777,11 @@ Create an irregular sized hole with beveled top and bottom. Children should be a
       union()
       {
         brace(4, holes = false);
-          cutout(l = 0.25, neg = false)
+          cutout(depth = 0.25, neg = false)
             offset(r=Clearance)
               shaft_profile();
       }
-      cutout(l = 0.25, neg = true)
+      cutout(depth = 0.25, neg = true)
         offset(r=Clearance)
           shaft_profile();
     }
@@ -889,7 +889,7 @@ Creates a rectangular array of holes centered on the origin with block unit spac
 
 **Usage:** 
 
-- hole\_slot(l);
+- hole\_slot(length);
 
 **Description:** 
 
@@ -918,7 +918,7 @@ Create a 2D slot profile with radius equal to [`HoleRadius`](#constant-holeradiu
 
 **Usage:** 
 
-- BU\_slot(l);
+- BU\_slot(length);
 
 **Description:** 
 
@@ -947,7 +947,7 @@ Create a 2D slot profile with radius [`BU`](#constant-bu)/2
 
 **Usage:** 
 
-- slot(l, r);
+- slot(length, r);
 
 **Description:** 
 
@@ -957,7 +957,7 @@ Create a 2D slot profile.
 
 <abbr title="These args can be used by position or by name.">By&nbsp;Position</abbr> | What it does
 -------------------- | ------------
-`l`                  | Length of slot in block units.
+`length`             | Length of slot in block units.
 
 <br/>
 

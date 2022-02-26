@@ -143,7 +143,7 @@ module beam_threaded(length)
             BU_Tz(length / 2 + 0.1)
                 Rx(180)
                     thread(length = 1.5, internal = true, center = false);
-            hole(l = length - 3);
+            hole(depth = length - 3);
         }
     }
 }
@@ -286,7 +286,7 @@ module brace_arc(r, angle, h = 0.25, holes = 2)
                 for(n = [0:holes - 1])
                     Rz(n * angle / (holes-(angle == 360?0:1)))
                         BU_Tx(r)
-                        hole(l = 0.25, neg = false);
+                        hole(depth = 0.25, neg = false);
             
             rotate_extrude(angle=angle, convexity = 8, $fn = FragmentNumber * r * 2)
                BU_Tx(r)
@@ -297,7 +297,7 @@ module brace_arc(r, angle, h = 0.25, holes = 2)
                 for(n = [0:holes - 1])
                     Rz(n * angle / (holes-(angle == 360?0:1)))
                         BU_Tx(r)
-                        hole(l = 0.25, neg = true);
+                        hole(depth = 0.25, neg = true);
         
         
     }
@@ -445,9 +445,9 @@ module spacer(length = 0.25, center = true)
     {
       bevel_plate(h = length, center = center)
         Ci(d = BU);
-      hole(l = length, neg = false, center = center);
+      hole(depth = length, neg = false, center = center);
     }
-    hole(l = length, neg = true, center = center);
+    hole(depth = length, neg = true, center = center);
   }
 }
 
@@ -466,7 +466,7 @@ module fixed_washer(length = 0.25, center = true)
   D()
   {
     nut_blank(length = length, center = center);
-    cutout(l = length, center = center)
+    cutout(depth = length, center = center)
     {
       offset(r = Clearance)
       fastener_profile();
@@ -480,40 +480,40 @@ module fixed_washer(length = 0.25, center = true)
 
 // Module: hole()
 // Usage:
-//   hole(l = 1, neg = true, bevel = [true,true]);
+//   hole(depth = 1, neg = true, bevel = [true,true]);
 // Description:
 //   Create a circular standard sized hole with beveled top and bottom.
 // Arguments:
-//   l = The length of the hole in base units.
+//   depth = The depth of the hole in base units.
 //   neg = true to create hole cavity, false to create sleeve and bevel.
 //   bevel = [bevel on top, bevel on bottom]
 // Example(3D):
 //   difference()
 //   {
 //     BU_cube();
-//     hole(l = 1, neg = true);
+//     hole(depth = 1, neg = true);
 //   }
 // Example(3D):
-//   hole(l = 1, neg = false);
+//   hole(depth = 1, neg = false);
 // Example(3D):
 //   difference()
 //   {
-//     hole(l = 1, neg = false);
-//     hole(l = 1, neg = true);
+//     hole(depth = 1, neg = false);
+//     hole(depth = 1, neg = true);
 //   }
-module hole(l = 1, neg = true, bevel = [true,true], center = true)
+module hole(depth = 1, neg = true, bevel = [true,true], center = true)
 {
-    cutout(l, neg, bevel, center)
+    cutout(depth, neg, bevel, center)
         Ci(r = HoleRadius);
 }
 
 // Module: cutout()
 // Usage:
-//   cutout(l, neg = true, bevel = [true,true]);
+//   cutout(depth, neg = true, bevel = [true,true]);
 // Description:
 //   Create an irregular sized hole with beveled top and bottom. Children should be a convex 2D shape.
 // Arguments:
-//   l = The length of the cutout in base units.
+//   depth = The depth of the cutout in base units.
 //   neg = true to create cutout cavity, false to create sleeve and top bevel.
 //   bevel = [bevel on top, bevel on bottom]
 // Example(3D): Create a brace with a slot down most of the length.
@@ -523,13 +523,13 @@ module hole(l = 1, neg = true, bevel = [true,true], center = true)
 //     {
 //       brace(4, holes = false);
 //       
-//       cutout(l = 0.25, neg = false)
+//       cutout(depth = 0.25, neg = false)
 //         BU_Tx(1)
-//           hole_slot(l = 3);
+//           hole_slot(length = 3);
 //     }
-//     cutout(l = 0.25, neg = true)
+//     cutout(depth = 0.25, neg = true)
 //       BU_Tx(1)
-//         hole_slot(l = 3);
+//         hole_slot(length = 3);
 //   }
 // Example(3D): Shaft shaped hole in brace.
 //   difference()
@@ -537,27 +537,27 @@ module hole(l = 1, neg = true, bevel = [true,true], center = true)
 //     union()
 //     {
 //       brace(4, holes = false);
-//         cutout(l = 0.25, neg = false)
+//         cutout(depth = 0.25, neg = false)
 //           offset(r=Clearance)
 //             shaft_profile();
 //     }
-//     cutout(l = 0.25, neg = true)
+//     cutout(depth = 0.25, neg = true)
 //       offset(r=Clearance)
 //         shaft_profile();
 //   }
-module cutout(l, neg = true, bevel = [true, true], center = true)
+module cutout(depth, neg = true, bevel = [true, true], center = true)
 {
-    BU_Tz(center?0:l/2)
+    BU_Tz(center?0:depth/2)
     if(neg)
     {
         U()
         {
-            LiEx(l * BU + 0.1)
+            LiEx(depth * BU + 0.1)
                 children();
             for(i = [0,1])
                 if(bevel[i])
                     Sz(1 - 2 * i)
-                        BU_Tz(l/2)
+                        BU_Tz(depth/2)
                             bevel(0, true)
                                 children();
                    
@@ -566,9 +566,9 @@ module cutout(l, neg = true, bevel = [true, true], center = true)
     else
     {
         Tz(-Chamfer / 2)
-        LiEx(h = l * BU - Chamfer)
+        LiEx(h = depth * BU - Chamfer)
             offset(Chamfer * 2 + BevelWidth)children();
-        BU_Tz(l/2)
+        BU_Tz(depth/2)
             bevel(Chamfer * 2 + BevelWidth, false)
                 children();
             
@@ -605,7 +605,7 @@ module cutout(l, neg = true, bevel = [true, true], center = true)
 module hole_grid(size = [1,1], l = 1, neg = true)
 {
     forXY(N = size.x, M = size.y, dx = BU, dy = BU)
-        hole(l = l, neg = neg);
+        hole(depth = l, neg = neg);
 }
 
 // Module: hole_list()
@@ -631,53 +631,53 @@ module hole_list(list = [[0,0]], l = 1, neg = true)
 {
     for(i = list)
         BU_T(i.x, i.y, 0)
-            hole(l = l, neg = neg);
+            hole(depth = l, neg = neg);
 }
 
 
 // Module: hole_slot()
 // Usage:
-//   hole_slot(l);
+//   hole_slot(length);
 // Description:
 //   Create a 2D slot profile with radius equal to {{HoleRadius}} and length l.
 // Arguments:
 //   l = Length of slot in block units.
 // Example(2D):
 //   hole_slot(2);
-module hole_slot(l)
+module hole_slot(length)
 {
-    slot(l, HoleRadius);
+    slot(length, HoleRadius);
 }
 
 // Module: BU_slot()
 // Usage:
-//   BU_slot(l);
+//   BU_slot(length);
 // Description:
 //   Create a 2D slot profile with radius {{BU}}/2
 // Arguments:
 //   l = Length of slot in block units.
 // Example(2D):
 //   BU_slot(2);
-module BU_slot(l)
+module BU_slot(length)
 {
-    slot(l, BU/2);
+    slot(length, BU/2);
 }
 
 // Module: slot()
 // Usage:
-//   slot(l, r);
+//   slot(length, r);
 // Description:
 //   Create a 2D slot profile.
 // Arguments:
-//   l = Length of slot in block units.
+//   length = Length of slot in block units.
 // Example(2D):
 //   slot(2, r = 2 + Clearance);
-module slot(l, r = BU/2)
+module slot(length, r = BU/2)
 {
     hull()
     {
         MKx()
-            BU_Tx(l / 2 - 1 / 2)
+            BU_Tx(length / 2 - 1 / 2)
                 Ci(r = r);
     }
 }
@@ -913,7 +913,7 @@ module fastener_head()
         Rx(90)
           Sx(0.8)
             Cy(r = groove_d, h = 20, $fn = 4);
-      cutout(l = FastenerFlat/BU)
+      cutout(depth = FastenerFlat/BU)
         Ci(r = 1);
     }
   }
@@ -973,7 +973,7 @@ module nut_blank(length = 0.25, center = true)
       Ci(d = BU);
     Rz(45)
     rotN(N = 4, r = BU * 0.9)
-      cutout(l = length)
+      cutout(depth = length)
         Ci(d = BU);
   }
 }
