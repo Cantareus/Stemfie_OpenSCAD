@@ -20,9 +20,6 @@ Feel free to adapt and improve and share your OpenSCAD script (please contact Pa
 
 Contact: paulo.kiefe@stemfie.org (https://stemfie.org)
 
-
-Requires Belfry OpenScad Library for threading, download and install from https://github.com/revarbat/BOSL
-
 To use, add the following lines to the beginning of your file:
 
     include <stemfie.scad>

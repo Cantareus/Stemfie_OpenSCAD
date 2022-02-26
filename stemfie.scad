@@ -18,12 +18,8 @@
 //   Feel free to adapt and improve and share your OpenSCAD script (please contact Paulo Kiefe)  
 //   .
 //   Contact: paulo.kiefe@stemfie.org (https://stemfie.org)
-//   .
-//   .
-//   Requires Belfry OpenScad Library for threading, download and install from https://github.com/revarbat/BOSL
 // Includes:
 //   include <stemfie.scad>
-include <BOSL/threading.scad>
 
 // Section: Universal constants
 
@@ -696,10 +692,11 @@ module slot(length, r = BU/2)
 //   }
 module thread(length, internal = false, bevel = false, center = true)
 {
-    radius = (internal?HoleRadius:ShaftRadius);
+    radius = (internal?(HoleRadius + 0.3):ShaftRadius);
     BU_Tz(center?0:length / 2)
     {
-      trapezoidal_threaded_rod (internal = internal, profile=[[-0.5,-0.87],[0,0],[0,0]], d = radius * 2, pitch=ThreadPitch, l = length * BU);
+      simple_thread(length * BU, diameter = radius * 2 , pitch = ThreadPitch, depth = 1.3);
+
       if(bevel && internal)
       {
         
@@ -712,6 +709,29 @@ module thread(length, internal = false, bevel = false, center = true)
             Cy(r1 = radius/2, r2 = radius * 1.15, h = radius/2);
       }
     }
+}
+
+module simple_thread(length, diameter, pitch = 1.5, depth = 1)
+{
+  $fn = $fn>0?$fn:ceil(max(min(360/$fa,diameter*PI/$fs),5));
+  turns = length / pitch + 2;
+  num_points = ceil(turns * $fn) + 1;
+  
+  points = [for(i = [0:num_points-1], j = [0,1])[cos(i/$fn * 360) * (diameter/2 - depth*(1-j)), sin(i/$fn * 360) * (diameter/2 - depth * (1-j)), i / $fn * pitch + pitch / 2 * j]];
+  paths = [for(i = [0:2:num_points*2-4 - $fn*2])[i,i+1, i+3, i+2], 
+           for(i = [$fn*2:2:num_points*2-4])[i, i+2, i+3-$fn*2,i+1-$fn*2],
+           [for(i = [$fn:-1:0])i * 2],
+             [0,1,$fn*2],
+           [for(i = [0:$fn])i * 2 + num_points * 2 - $fn * 2 - 2],
+             [num_points * 2 - $fn * 2 - 2, num_points * 2 - 2, num_points * 2 - $fn * 2 - 1]];
+  Tz(-length/2)
+  I()
+  {
+    Tz(-pitch)
+      polyhedron(points, paths, 100);
+    Tz(length/2)
+      Cu(diameter+1,diameter+1,length-0.1);
+  }
 }
 
 // Module: bevel
