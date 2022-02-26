@@ -18,9 +18,12 @@
 //   Feel free to adapt and improve and share your OpenSCAD script (please contact Paulo Kiefe)  
 //   .
 //   Contact: paulo.kiefe@stemfie.org (https://stemfie.org)
+//   .
+//   .
+//   Requires Belfry OpenScad Library for threading, download and install from https://github.com/revarbat/BOSL
 // Includes:
 //   include <stemfie.scad>
-include <includes/threads.scad>
+include <BOSL/threading.scad>
 
 // Section: Universal constants
 
@@ -128,7 +131,7 @@ module beam_block(size = [4,1,1], holes = [true, true, true], center = true)
 //   beam_threaded(length);
 // Description:
 //   Creates a stemfie beam with threaded ends.
-// Example(3D, Render):
+// Example(3D):
 //    beam_threaded(4);
 module beam_threaded(length)
 {
@@ -693,17 +696,18 @@ module slot(length, r = BU/2)
 //   }
 module thread(length, internal = false, bevel = false, center = true)
 {
-    radius = (internal?HoleRadius:(ShaftRadius - 0.2));
-    BU_Tz(center?-length / 2:0)
+    radius = (internal?HoleRadius:ShaftRadius);
+    BU_Tz(center?0:length / 2)
     {
-      metric_thread (internal = internal, diameter = radius * 2, pitch=ThreadPitch, length = length * BU);
+      trapezoidal_threaded_rod (internal = internal, profile=[[-0.5,-0.87],[0,0],[0,0]], d = radius * 2, pitch=ThreadPitch, l = length * BU);
       if(bevel && internal)
       {
         
         Sz(-1)
+        BU_Tz(length/2)
         Tz(-radius/4 + 0.1)
         Cy(r1 = radius/2, r2 = radius * 1.15, h = radius/2);
-        BU_Tz(length)
+        BU_Tz(length/2)
           Tz(-radius/4 + 0.1)
             Cy(r1 = radius/2, r2 = radius * 1.15, h = radius/2);
       }
