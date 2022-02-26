@@ -717,19 +717,19 @@ module simple_thread(length, diameter, pitch = 1.5, depth = 1)
   turns = length / pitch + 2;
   num_points = ceil(turns * $fn) + 1;
   
-  points = [for(i = [0:num_points-1], j = [0,1])[cos(i/$fn * 360) * (diameter/2 - depth*(1-j)), sin(i/$fn * 360) * (diameter/2 - depth * (1-j)), i / $fn * pitch + pitch / 2 * j]];
+  points = [for(i = [0:num_points-1], j = [0,1])[cos(i/$fn * 360) * (diameter/2 - depth*(1-j)), sin(i/$fn * 360) * (diameter/2 - depth * (1-j)), i / $fn * pitch + pitch / 2 * j],[0,0,0],[0,0,length+pitch*2]];
+  last = len(points)-1;
+  first = len(points)-2;
   paths = [for(i = [0:2:num_points*2-4 - $fn*2])[i,i+1, i+3, i+2], 
            for(i = [$fn*2:2:num_points*2-4])[i, i+2, i+3-$fn*2,i+1-$fn*2],
-           [for(i = [$fn:-1:0])i * 2],
-             [0,1,$fn*2],
-           [for(i = [0:$fn])i * 2 + num_points * 2 - $fn * 2 - 2],
-             [num_points * 2 - $fn * 2 - 2, num_points * 2 - 2, num_points * 2 - $fn * 2 - 1]];
-  Tz(-length/2)
+           for(i = [0:$fn-1])[i * 2, i * 2 + 2, first],
+             [0,first, $fn*2, 1],
+           for(i = [$fn-1:-1:0])[i * 2 + num_points * 2 - $fn * 2 - 2, last, i * 2 + num_points * 2 - $fn * 2],
+             [num_points * 2 - $fn * 2 - 2, num_points * 2 - $fn * 2 - 1, num_points * 2 - 2,last]];
   I()
   {
-    Tz(-pitch)
+    Tz(-length/2 - pitch)
       polyhedron(points, paths, 100);
-    Tz(length/2)
       Cu(diameter+1,diameter+1,length-0.1);
   }
 }
