@@ -90,36 +90,34 @@ $fn = FragmentNumber;
 //   beam_block([3, 2, 2]);
 module beam_block(size = [4,1,1], holes = [true, true, true], center = true)
 {
-    size = is_list(size)?size:[size,1, 1];
-    holes = is_list(holes)?holes:[holes,holes,holes];
-    
-    faceRotate = [[0,90,0],[90,0,0],[0,0,90]];
-    T(center?0:((size - [1,1,1]) * BU / 2))
-    D()
+  size = is_list(size)?size:[size,1, 1];
+  holes = is_list(holes)?holes:[holes,holes,holes];
+  
+  faceRotate = [[0,90,0],[90,0,0],[0,0,90]];
+  T(center?0:((size - [1,1,1]) * BU / 2))
+  D()
+  {
+    U()
     {
-        U()
-        {
-
-            D()
-            {
-                BU_cube(size);
-                    Tz(size.z * BU / 2)
-                    bevel(offs = -Chamfer * 2 - BevelWidth, neg = true)
-                    Sq(size.x * BU, size.y * BU);
-            }
-            if(holes.z)
-                hole_grid(size = [size.x, size.y], l = size.z, neg = false);
-        }
-        
-        for(i = [0:2])
-        {
-            if(holes[i])
-            R(faceRotate[i])
-                hole_grid(size = [size[(i + 2) % 3], size[(i + 1) % 3]], l = size[i], neg = true);
-
-        }
+      D()
+      {
+        BU_cube(size);
+          Tz(size.z * BU / 2)
+            bevel(offs = -Chamfer * 2 - BevelWidth, neg = true)
+              Sq(size.x * BU, size.y * BU);
+      }
+      if(holes.z)
+        hole_grid(size = [size.x, size.y], l = size.z, neg = false);
+    }
+    
+    for(i = [0:2])
+    {
+      if(holes[i])
+        R(faceRotate[i])
+          hole_grid(size = [size[(i + 2) % 3], size[(i + 1) % 3]], l = size[i], neg = true);
 
     }
+  }
 }
 
 // Module: beam_threaded()
@@ -131,20 +129,19 @@ module beam_block(size = [4,1,1], holes = [true, true, true], center = true)
 //    beam_threaded(4);
 module beam_threaded(length)
 {
-    D()
-    {
-        beam_block(length, holes = [false, true, true], center = true);
+  D()
+  {
+    beam_block(length, holes = [false, true, true], center = true);
 
-        if(length > 3)
-        RKz(180)
-        Ry(90)
-        {
-            BU_Tz(length / 2 + 0.1)
-                Rx(180)
-                    thread(length = 1.5, internal = true, center = false);
-            hole(depth = length - 3);
-        }
-    }
+    if(length > 3)
+      RKz(180) Ry(90)
+      {
+        BU_Tz(length / 2 + 0.1)
+          Rx(180)
+            thread(length = 1.5, internal = true, center = false);
+        hole(depth = length - 3);
+      }
+  }
 }
 
 // Module: beam_cross()
@@ -164,16 +161,17 @@ module beam_threaded(length)
 //   beam_cross([2,2,2,2]);
 module beam_cross(lengths = [2,2,2,2])
 {
-    cross_helper(len(lengths))
-    {
-        beam_block([lengths[0] + 1,1,1], center = false);
-        if(len(lengths) > 1)
-            beam_block([lengths[1] + 1,1,1], center = false);
-        if(len(lengths) > 2)
-            beam_block([lengths[2] + 1,1,1], center = false);
-        if(len(lengths) > 3)
-            beam_block([lengths[3] + 1,1,1], center = false);
-    }
+  cross_helper(len(lengths))
+  {
+    beam_block([lengths[0] + 1,1,1], center = false);
+    //Don't use a for loop here, the children will not be available to parent module.
+    if(len(lengths) > 1)
+      beam_block([lengths[1] + 1,1,1], center = false);
+    if(len(lengths) > 2)
+      beam_block([lengths[2] + 1,1,1], center = false);
+    if(len(lengths) > 3)
+      beam_block([lengths[3] + 1,1,1], center = false);
+  }
 }
 
 // Subsection: Braces
@@ -192,20 +190,18 @@ module beam_cross(lengths = [2,2,2,2])
 //   brace(3, h = 0.5, holes = false);
 module brace(size, h = 0.25, holes = true)
 {
-    BU_Tx((size-1)/2)
-    D()
+  BU_Tx((size-1)/2)  D()
+  {
+    U()
     {
-        U()
-        {
-            bevel_plate(h)
-              BU_slot(size);
-            if(holes)
-              hole_grid([size,1],h,false);
-        }
-        if(holes)
-          hole_grid([size,1],h,true);
+      bevel_plate(h)
+        BU_slot(size);
+      if(holes)
+        hole_grid([size,1],h,false);
     }
-    
+    if(holes)
+      hole_grid([size,1],h,true);
+  }
 }
 
 // Module: brace_cross()
@@ -226,16 +222,16 @@ module brace(size, h = 0.25, holes = true)
 //   brace_cross([1, 1, 1, 1], 0.5);
 module brace_cross(lengths = [2,2,2,2], h = 0.25)
 {
-    cross_helper(len(lengths))
-    {
-        brace(lengths[0] + 1, h);
-        if(len(lengths) > 1)
-            brace(lengths[1] + 1, h);
-        if(len(lengths) > 2)
-            brace(lengths[2] + 1, h);
-        if(len(lengths) > 3)
-            brace(lengths[3] + 1, h);
-    }
+  cross_helper(len(lengths))
+  {
+    brace(lengths[0] + 1, h);
+    if(len(lengths) > 1)
+      brace(lengths[1] + 1, h);
+    if(len(lengths) > 2)
+      brace(lengths[2] + 1, h);
+    if(len(lengths) > 3)
+      brace(lengths[3] + 1, h);
+  }
 }
 
 // Module: brace_arc()
@@ -257,51 +253,47 @@ module brace_cross(lengths = [2,2,2,2], h = 0.25)
 //   brace_arc(3, 350, holes = 12);
 module brace_arc(r, angle, h = 0.25, holes = 2)
 {
-    //If the remaining angle leaves a distance less than 1BU increase the angle to 360.
-    angle = ((1 - min(angle, 360)/360) * r * PI * 2 < 1)?360:min(angle, 360);
-    
-    //Reduce the number of holes if necessary to ensure spacing is always greater than 1BU.
-    holes = min(floor(angle/180 * PI * r) + 1, holes);
-    D()
+  //If the remaining angle leaves a distance less than 1BU increase the angle to 360.
+  angle = ((1 - min(angle, 360)/360) * r * PI * 2 < 1)?360:min(angle, 360);
+  
+  //Reduce the number of holes if necessary to ensure spacing is always greater than 1BU.
+  holes = min(floor(angle/180 * PI * r) + 1, holes);
+  D()
+  {
+    U()
     {
-        U()
-        {
-            if(angle < 360)
-            for(i=[0, 1])
-            {
-                Rz(i * angle)
-                BU_Tx(r)
-                Rz(i * 180)
-                I()
-                {
-                    bevel_plate(h = h)
-                        Ci(BU/2);
-                    BU_Ty(-1/2)
-                        Cu(BU+1, BU, BU * h + 1);
-                }
-            }
-            
-            if(holes > 0)
-                for(n = [0:holes - 1])
-                    Rz(n * angle / (holes-(angle == 360?0:1)))
-                        BU_Tx(r)
-                        hole(depth = 0.25, neg = false);
-            
-            rotate_extrude(angle=angle, convexity = 8, $fn = FragmentNumber * r * 2)
-               BU_Tx(r)
-                 brace_cross_section(h = h);
-        }
-        
-        if(holes > 0)
-                for(n = [0:holes - 1])
-                    Rz(n * angle / (holes-(angle == 360?0:1)))
-                        BU_Tx(r)
-                        hole(depth = 0.25, neg = true);
-        
-        
+      if(angle < 360)
+      for(i=[0, 1])
+      {
+        Rz(i * angle)
+          BU_Tx(r)
+            Rz(i * 180)
+              I()
+              {
+                bevel_plate(h = h)
+                  Ci(BU/2);
+                BU_Ty(-1/2)
+                  Cu(BU+1, BU, BU * h + 1);
+              }
+      }
+      
+      if(holes > 0)
+        for(n = [0:holes - 1])
+          Rz(n * angle / (holes-(angle == 360?0:1)))
+            BU_Tx(r)
+              hole(depth = 0.25, neg = false);
+      
+      rotate_extrude(angle=angle, convexity = 8, $fn = FragmentNumber * r * 2)
+        BU_Tx(r)
+          brace_cross_section(h = h);
     }
-
-            
+    
+    if(holes > 0)
+      for(n = [0:holes - 1])
+        Rz(n * angle / (holes-(angle == 360?0:1)))
+          BU_Tx(r)
+            hole(depth = 0.25, neg = true);
+  }
 }
 
 // Subsection: Fasteners
@@ -362,45 +354,47 @@ module screw(thread_length, shaft_length = 0, screw_head = true)
 //   pin(length = 1, head = true);
 module pin(length = 0.25, head = true)
 {
-    if(head)
-        fastener_head();
-    
-    Ry(90)
-    {
-        LiEx(0.125 * BU, C = false)
-            fastener_profile();
-        LiEx((length + 0.25) * BU, C = false)
-            pin_profile();
-        BU_Tz(length + 0.25)
-        LiEx(0.125 * BU, C = false)
+  if(head)
+    fastener_head();
+  
+  Ry(90)
+  {
+    LiEx(0.125 * BU, C = false)
+      fastener_profile();
+
+    LiEx((length + 0.25) * BU, C = false)
+      pin_profile();
+
+    BU_Tz(length + 0.25)
+      LiEx(0.125 * BU, C = false)
         RKz(180)
-            I()
-        {
-            fastener_profile();
-            //My()
-            D()
-            {
-                T(ShaftRadius-FastenerFlat/2-0.3, 0)
-                    Ci(r = ShaftRadius);
-                Ty(-ShaftRadius)
-                    Sq(ShaftRadius * 2);
-            }
-        }
-        BU_Tz(length + 0.375 + Chamfer/ BU)
-        bevel(neg = false)
-        RKz(180)
-            I()
-        {
+          I()
+          {
             fastener_profile();
             D()
             {
-                T(ShaftRadius-FastenerFlat/2-0.3, 0)
-                    Ci(r = ShaftRadius);
-                Ty(-ShaftRadius)
-                    Sq(ShaftRadius * 2);
+              T(ShaftRadius-FastenerFlat/2-0.3, 0)
+                Ci(r = ShaftRadius);
+              Ty(-ShaftRadius)
+                Sq(ShaftRadius * 2);
             }
-        }
-    }
+          }
+
+    BU_Tz(length + 0.375 + Chamfer/ BU)
+      bevel(neg = false)
+        RKz(180)
+          I()
+          {
+            fastener_profile();
+            D()
+            {
+              T(ShaftRadius-FastenerFlat/2-0.3, 0)
+                Ci(r = ShaftRadius);
+              Ty(-ShaftRadius)
+                Sq(ShaftRadius * 2);
+            }
+          }
+  }
 }
 
 // Module: nut()
@@ -502,8 +496,8 @@ module fixed_washer(length = 0.25, center = true)
 //   }
 module hole(depth = 1, neg = true, bevel = [true,true], center = true)
 {
-    cutout(depth, neg, bevel, center)
-        Ci(r = HoleRadius);
+  cutout(depth, neg, bevel, center)
+    Ci(r = HoleRadius);
 }
 
 // Module: cutout()
@@ -546,32 +540,33 @@ module hole(depth = 1, neg = true, bevel = [true,true], center = true)
 //   }
 module cutout(depth, neg = true, bevel = [true, true], center = true)
 {
-    BU_Tz(center?0:depth/2)
-    if(neg)
+  BU_Tz(center?0:depth/2)
+  if(neg)
+  {
+    U()
     {
-        U()
-        {
-            LiEx(depth * BU + 0.1)
+      LiEx(depth * BU + 0.1)
+        children();
+
+      for(i = [0,1])
+        if(bevel[i])
+          Sz(1 - 2 * i)
+            BU_Tz(depth/2)
+              bevel(0, true)
                 children();
-            for(i = [0,1])
-                if(bevel[i])
-                    Sz(1 - 2 * i)
-                        BU_Tz(depth/2)
-                            bevel(0, true)
-                                children();
-                   
-        }
+                  
     }
-    else
-    {
-        Tz(-Chamfer / 2)
-        LiEx(h = depth * BU - Chamfer)
-            offset(Chamfer * 2 + BevelWidth)children();
-        BU_Tz(depth/2)
-            bevel(Chamfer * 2 + BevelWidth, false)
-                children();
-            
-    }
+  }
+  else
+  {
+    Tz(-Chamfer / 2)
+      LiEx(h = depth * BU - Chamfer)
+        offset(Chamfer * 2 + BevelWidth)children();
+
+    BU_Tz(depth/2)
+      bevel(Chamfer * 2 + BevelWidth, false)
+        children();
+  }
 }
 
 // Module: hole_grid()
@@ -603,8 +598,8 @@ module cutout(depth, neg = true, bevel = [true, true], center = true)
 //   }
 module hole_grid(size = [1,1], l = 1, neg = true)
 {
-    forXY(N = size.x, M = size.y, dx = BU, dy = BU)
-        hole(depth = l, neg = neg);
+  forXY(N = size.x, M = size.y, dx = BU, dy = BU)
+    hole(depth = l, neg = neg);
 }
 
 // Module: hole_list()
@@ -628,9 +623,9 @@ module hole_grid(size = [1,1], l = 1, neg = true)
 //   }
 module hole_list(list = [[0,0]], l = 1, neg = true)
 {
-    for(i = list)
-        BU_T(i.x, i.y, 0)
-            hole(depth = l, neg = neg);
+  for(i = list)
+    BU_T(i.x, i.y, 0)
+      hole(depth = l, neg = neg);
 }
 
 
@@ -645,7 +640,7 @@ module hole_list(list = [[0,0]], l = 1, neg = true)
 //   hole_slot(2);
 module hole_slot(length)
 {
-    slot(length, HoleRadius);
+  slot(length, HoleRadius);
 }
 
 // Module: BU_slot()
@@ -659,7 +654,7 @@ module hole_slot(length)
 //   BU_slot(2);
 module BU_slot(length)
 {
-    slot(length, BU/2);
+  slot(length, BU/2);
 }
 
 // Module: slot()
@@ -673,12 +668,12 @@ module BU_slot(length)
 //   slot(2, r = 2 + Clearance);
 module slot(length, r = BU/2)
 {
-    hull()
-    {
-        MKx()
-            BU_Tx(length / 2 - 1 / 2)
-                Ci(r = r);
-    }
+  hull()
+  {
+    MKx()
+      BU_Tx(length / 2 - 1 / 2)
+        Ci(r = r);
+  }
 }
 
 // Module: thread()
@@ -692,23 +687,23 @@ module slot(length, r = BU/2)
 //   }
 module thread(length, internal = false, bevel = false, center = true)
 {
-    radius = (internal?(HoleRadius + 0.3):ShaftRadius);
-    BU_Tz(center?0:length / 2)
-    {
-      simple_thread(length * BU, diameter = radius * 2 , pitch = ThreadPitch, depth = 1.3);
+  radius = (internal?(HoleRadius + 0.3):ShaftRadius);
+  BU_Tz(center?0:length / 2)
+  {
+    simple_thread(length * BU, diameter = radius * 2 , pitch = ThreadPitch, depth = 1.3);
 
-      if(bevel && internal)
-      {
-        
-        Sz(-1)
-        BU_Tz(length/2)
+    if(bevel && internal)
+    {
+      
+      Sz(-1)
+      BU_Tz(length/2)
+      Tz(-radius/4 + 0.1)
+      Cy(r1 = radius/2, r2 = radius * 1.15, h = radius/2);
+      BU_Tz(length/2)
         Tz(-radius/4 + 0.1)
-        Cy(r1 = radius/2, r2 = radius * 1.15, h = radius/2);
-        BU_Tz(length/2)
-          Tz(-radius/4 + 0.1)
-            Cy(r1 = radius/2, r2 = radius * 1.15, h = radius/2);
-      }
+          Cy(r1 = radius/2, r2 = radius * 1.15, h = radius/2);
     }
+  }
 }
 
 module simple_thread(length, diameter, pitch = 1.5, depth = 1)
@@ -720,22 +715,27 @@ module simple_thread(length, diameter, pitch = 1.5, depth = 1)
   half = $fn / 2;
   num_points = ceil(turns * $fn); //Points needed on ridge from zero to length.
   
-  ridge_points = concat(
+  ridge_points = concat
+  (
     [for(i=[0:half-1])helix(0,180 + (i/half) * 180, pitch, diameter - 2 * depth * (1-i/half))], //Points on bottom clipped to zero
     [for(i = [0:num_points-1])helix(i, 0, pitch, diameter)],
-    [for(i=[0:half])helix(num_points, (( i)/half) * 180, pitch, diameter - 2 * depth * (i/half))]);  //Points on top clipped to length
-  valley_points = concat(
+    [for(i=[0:half])helix(num_points, (( i)/half) * 180, pitch, diameter - 2 * depth * (i/half))]  //Points on top clipped to length
+  );
+
+  valley_points = concat
+  (
     [for(i=[0:half-1])helix(0,(i/half) * 180, pitch, diameter - 2 * depth * i/half)], //Points on bottom clipped to zero
-      [for(i = [0:num_points-1])helix(i , 180, pitch, diameter - 2 * depth) ],
-        [for(i=[0:half])helix(num_points,180 + (i)/half * 180, pitch, diameter - 2 * depth * (1-i/half))]);  //Points on top clipped to length
-        
+    [for(i = [0:num_points-1])helix(i , 180, pitch, diameter - 2 * depth) ],
+    [for(i=[0:half])helix(num_points,180 + (i)/half * 180, pitch, diameter - 2 * depth * (1-i/half))]  //Points on top clipped to length
+  );        
+
   points = concat(ridge_points,valley_points);
   num_points2 = num_points + $fn + 1; //Include additional points that keep endpoints flush.
 
-
   paths = concat([for(j = [0,num_points2], i = [0:num_points2  - half - 2])[j + i, (j + i + num_points2  + half) % (num_points2  * 2), (j + i + 1 + num_points2  + half) % (num_points2 * 2), j + i + 1]],
-                  [[for(j=[0,num_points2], i = [0:half-1])i+j]], //Base polygon
-                  [[for(j=[0,num_points2], i = [0:half-1])num_points2 - i - 1 + j]]); //Top polygon
+                [[for(j=[0,num_points2], i = [0:half-1])i+j]], //Base polygon
+                [[for(j=[0,num_points2], i = [0:half-1])num_points2 - i - 1 + j]]); //Top polygon
+
   Tz(-length/2)
     polyhedron(points, paths, 100);
 
@@ -789,21 +789,22 @@ function helix(steps, phase, pitch, diameter) = [cos(steps/$fn * 360 + phase) * 
 //     circle(r = HoleRadius);
 module bevel(offs = 0, neg = true)
 {
-    offs = offs + (neg?Chamfer:0);
-    Tz(neg?0:-Chamfer)
+  offs = offs + (neg?Chamfer:0);
+  
+  Tz(neg?0:-Chamfer)
     Sz(neg?-1:1)
-    hull()
-    {
+      hull()
+      {
         Tz(-0.05)
-            LiEx(0.1)
-                offset(offs)
-                children();
+          LiEx(0.1)
+            offset(offs)
+              children();
         
         Tz(Chamfer / 2)
-        LiEx(Chamfer)
-                offset(offs - Chamfer)
-                children();
-    }
+          LiEx(Chamfer)
+            offset(offs - Chamfer)
+              children();
+      }
 }
 
 module bevel_plate(h = 0.25, top_bevel = true, center = true)
@@ -825,22 +826,22 @@ module bevel_plate(h = 0.25, top_bevel = true, center = true)
 
 module cross_helper(num = 4)
 {
-    for(i = [0: min(3, num - 1)])
+  for(i = [0: min(3, num - 1)])
+  {
+    Rz(-90 * i)
+    D()
     {
-        Rz(-90 * i)
-        D()
-        {
-            children(i);
-            if(num > 1)
-            {
-                if(num != 2 || i != 1)
-                    Rz(num == 3 && i == 2?0:45)BU_Tx(-1)Cu(BU * 2);
-                if(num != 2 || i != 0)
-                    Rz(num == 3 && i == 0?0:-45)BU_Tx(-1)Cu(BU * 2);
-            }
-        }
-    }
+      children(i);
 
+      if(num > 1)
+      {
+        if(num != 2 || i != 1)
+          Rz(num == 3 && i == 2?0:45)BU_Tx(-1)Cu(BU * 2);
+        if(num != 2 || i != 0)
+          Rz(num == 3 && i == 0?0:-45)BU_Tx(-1)Cu(BU * 2);
+      }
+    }
+  }
 }
 // Subsection: Shafts
 
@@ -853,11 +854,12 @@ module cross_helper(num = 4)
 //   shaft_profile();
 module shaft_profile()
 {
-    I()
-    {
-        Ci(r = ShaftRadius);
-        Sq(ShaftFlat, ShaftRadius * 3);
-    }
+  I()
+  {
+    Ci(r = ShaftRadius);
+
+    Sq(ShaftFlat, ShaftRadius * 3);
+  }
 }
 
 // Module: fastener_profile()
@@ -869,11 +871,12 @@ module shaft_profile()
 //   fastener_profile();
 module fastener_profile()
 {
-    I()
-    {
-        Ci(r = ShaftRadius);
-        Sq(FastenerFlat, ShaftRadius * 3);
-    }
+  I()
+  {
+    Ci(r = ShaftRadius);
+
+    Sq(FastenerFlat, ShaftRadius * 3);
+  }
 }
 
 // Module: pin_profile()
@@ -885,11 +888,12 @@ module fastener_profile()
 //   pin_profile();
 module pin_profile()
 {
-    I()
-    {
-        Ci(r = PinRadius);
-        Sq(FastenerFlat, PinRadius * 3);
-    }
+  I()
+  {
+    Ci(r = PinRadius);
+      
+    Sq(FastenerFlat, PinRadius * 3);
+  }
 }
 // Module: fastener_head_profile()
 // Usage: 
@@ -900,15 +904,16 @@ module pin_profile()
 //   fastener_head_profile();
 module fastener_head_profile()
 {
-    offset(r = 1)
+  offset(r = 1)
     offset(-1)
-    I()
-    {
+      I()
+      {
         Tx(1)
-        Ci(r = BU/2);
+          Ci(r = BU/2);
+
         BU_Tx(-1/2)
-        Sq(BU);
-    }
+          Sq(BU);
+      }
 }
 
 // Module: fastener_head()
@@ -929,24 +934,26 @@ module fastener_head()
     {
       hull()
       {
-          LiEx(FastenerFlat - Chamfer * 2)
-              fastener_head_profile();
-          LiEx(FastenerFlat)offset(-Chamfer)
-              fastener_head_profile();
+        LiEx(FastenerFlat - Chamfer * 2)
+          fastener_head_profile();
+
+        LiEx(FastenerFlat)offset(-Chamfer)
+          fastener_head_profile();
       }
+
       Ry(-90)
         LiEx(Chamfer * 2, C = false)
           fastener_profile();
     }
+
     Tx(-groove_offset)
     {
       MKz()
-      Tz(FastenerFlat/2)
-    
-      
-        Rx(90)
-          Sx(0.8)
-            Cy(r = groove_d, h = 20, $fn = 4);
+        Tz(FastenerFlat/2)
+          Rx(90)
+            Sx(0.8)
+              Cy(r = groove_d, h = 20, $fn = 4);
+
       cutout(depth = FastenerFlat/BU)
         Ci(r = 1);
     }
@@ -967,25 +974,23 @@ module fastener_head()
 //   shaft(4, false);
 module shaft(length = 1, beveled_ends = true, center = true)
 {
-    if(length > 0)
+  if(length > 0)
     Ry(90)
-    D()
-    {
+      D()
+      {
         BU_Tz(center?0:length/2)
         U()
         {
-            LiEx(length * BU - (beveled_ends?Chamfer * 2:0))
-            {
-                shaft_profile();
-            }
+          LiEx(length * BU - (beveled_ends?Chamfer * 2:0))
+            shaft_profile();
             
-            if(beveled_ends)
+          if(beveled_ends)
             MKz()
-            Tz(length * BU / 2)
+             Tz(length * BU / 2)
                 bevel(neg = false)
-                    shaft_profile();
+                  shaft_profile();
         }
-    }
+      }
 }
 
 // Subsection: Nuts and Washers
@@ -1001,39 +1006,41 @@ module shaft(length = 1, beveled_ends = true, center = true)
 module nut_blank(length = 0.25, center = true)
 {
   BU_Tz(center?0:length/2)
-  D()
-  {
-    bevel_plate(h = length, top_bevel = false)
-      Ci(d = BU);
-    Rz(45)
-    rotN(N = 4, r = BU * 0.9)
-      cutout(depth = length)
+    D()
+    {
+      bevel_plate(h = length, top_bevel = false)
         Ci(d = BU);
-  }
+        
+      Rz(45)
+        rotN(N = 4, r = BU * 0.9)
+          cutout(depth = length)
+            Ci(d = BU);
+    }
 }
 
 
 // Subsection: Braces
 module brace_cross_section(h = 0.25)
 {
-    
-    D()
+  D()
+  {
+    hull()
     {
-        hull()
-        {
-            Sq(BU,h*BU - Chamfer*2);
-            Sq(BU - Chamfer*2, h*BU);
-        }
-        
-        
-        hull()
-        {
-            Ty(h*BU/2 + 0.1)
-                Sq(BU - Chamfer * 2 - BevelWidth*2, 0.2);
-            Ty(h*BU/2)
-                Sq(BU - Chamfer * 4 - BevelWidth*2, Chamfer * 2);
-        }
+      Sq(BU,h*BU - Chamfer*2);
+
+      Sq(BU - Chamfer*2, h*BU);
     }
+    
+    
+    hull()
+    {
+      Ty(h*BU/2 + 0.1)
+        Sq(BU - Chamfer * 2 - BevelWidth*2, 0.2);
+
+      Ty(h*BU/2)
+        Sq(BU - Chamfer * 4 - BevelWidth*2, Chamfer * 2);
+    }
+  }
 }
 
 // Subsection: Beams
@@ -1051,12 +1058,9 @@ module brace_cross_section(h = 0.25)
 //   BU_cube([3,1,1]);
 module BU_cube(size = [1,1,1])
 {
-    D()
-    {
-        hull()
-            for(i = [[0, 1, 1],[1, 0, 1],[1, 1, 0]])
-                Cu(size * BU - i * Chamfer*2);
-    }
+  hull()
+    for(i = [[0, 1, 1],[1, 0, 1],[1, 1, 0]])
+      Cu(size * BU - i * Chamfer*2);
 }
 
 // Subsection: Block Unit Translation Shortcuts
@@ -1068,8 +1072,10 @@ module BU_cube(size = [1,1,1])
 //   BU_T([x, y, z]);
 // Description:
 //   Shortcut for translate([x * BU, y * BU, z * BU])
-module BU_T(x=0, y=0, z=0){
-  translate(x[0]==undef?[x, y, z]* BU:x * BU)children(); }
+module BU_T(x=0, y=0, z=0)
+{
+  translate(x[0]==undef?[x, y, z]* BU:x * BU)children(); 
+}
 
 // Module: BU_TK()
 // Usage:
@@ -1079,43 +1085,72 @@ module BU_T(x=0, y=0, z=0){
 //   Children at origin and translation.
 // Example(3D): One block unit cube centered at origin and one at [3 * BU, 0, 0]
 //   BU_TK(3, 0 , 0) BU_cube();
-module BU_TK(x=0, y=0, z=0){ children(); BU_T(x, y, z) children(); }
+module BU_TK(x=0, y=0, z=0)
+{
+  children(); 
+  
+  BU_T(x, y, z)
+    children(); 
+}
 
 // Module: BU_Tx()
 // Usage: BU_Tx(x)
 // Description:
 //   Shortcut for translate([x * BU, 0, 0])
-module BU_Tx(x) { translate([x * BU, 0, 0])children(); }
+module BU_Tx(x)
+{
+  translate([x * BU, 0, 0])
+    children();
+}
 
 // Module: BU_Ty()
 // Usage: BU_Ty(y)
 // Description:
 //   Shortcut for translate([0, y * BU, 0])
-module BU_Ty(y) { translate([0, y * BU, 0])children(); }
+module BU_Ty(y)
+{
+  translate([0, y * BU, 0])
+    children();
+}
 
 // Module: BU_Tz()
 // Usage: BU_Tz(z)
 // Description:
 //   Shortcut for translate([0, 0, z * BU])
-module BU_Tz(z) { translate([0, 0, z * BU])children(); }
+module BU_Tz(z)
+{
+  translate([0, 0, z * BU])children();
+}
 
 // Module: BU_TKx()
 // Usage: BU_TKx(x)
 // Description:
 //   Alternative for BU_TK(x=x)
-module BU_TKx(x) { BU_TK(x=x) children(); }
+module BU_TKx(x)
+{
+  BU_TK(x=x)
+    children();
+}
 
 // Module: BU_TKy()
 // Usage: BU_TKy(z)
 // Description:
 //   Alternative for BU_TK(y=y)
-module BU_TKy(y) { BU_TK(y=y) children(); }
+module BU_TKy(y)
+{
+  BU_TK(y=y)
+    children();
+}
 
 // Module: BU_TKz()
 // Usage: BU_TKz(z)
 // Description:
 //   Alternative for BU_TK(z=z)
-module BU_TKz(z) { BU_TK(z=z) children(); }
+module BU_TKz(z)
+{
+  BU_TK(z=z)
+    children();
+}
 
 
 /// https://www.thingiverse.com/thing:644830
