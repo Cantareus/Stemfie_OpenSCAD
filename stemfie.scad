@@ -713,26 +713,36 @@ module thread(length, internal = false, bevel = false, center = true)
 
 module simple_thread(length, diameter, pitch = 1.5, depth = 1)
 {
-  $fn = $fn>0?$fn:ceil(max(min(360/$fa,diameter*PI/$fs),5));
-  turns = length / pitch + 2;
-  num_points = ceil(turns * $fn) + 1;
+  //Calculate $fn and make sure it's even.
+  $fn = $fn>0?(ceil($fn/2)*2):ceil(max(min(360/$fa,diameter*PI/$fs),5) / 2) * 2;
   
-  points = [for(i = [0:num_points-1], j = [0,1])[cos(i/$fn * 360) * (diameter/2 - depth*(1-j)), sin(i/$fn * 360) * (diameter/2 - depth * (1-j)), i / $fn * pitch + pitch / 2 * j],[0,0,0],[0,0,length+pitch*2]];
-  last = len(points)-1;
-  first = len(points)-2;
-  paths = [for(i = [0:2:num_points*2-4 - $fn*2])[i,i+1, i+3, i+2], 
-           for(i = [$fn*2:2:num_points*2-4])[i, i+2, i+3-$fn*2,i+1-$fn*2],
-           for(i = [0:$fn-1])[i * 2, i * 2 + 2, first],
-             [0,first, $fn*2, 1],
-           for(i = [$fn-1:-1:0])[i * 2 + num_points * 2 - $fn * 2 - 2, last, i * 2 + num_points * 2 - $fn * 2],
-             [num_points * 2 - $fn * 2 - 2, num_points * 2 - $fn * 2 - 1, num_points * 2 - 2,last]];
-  I()
-  {
-    Tz(-length/2 - pitch)
-      polyhedron(points, paths, 100);
-      Cu(diameter+1,diameter+1,length-0.1);
-  }
+  turns = length / pitch;
+  half = $fn / 2;
+  num_points = ceil(turns * $fn); //Points needed on ridge from zero to length.
+  
+  ridge_points = concat(
+    [for(i=[0:half-1])helix(0,180 + (i/half) * 180, pitch, diameter - 2 * depth * (1-i/half))], //Points on bottom clipped to zero
+    [for(i = [0:num_points-1])helix(i, 0, pitch, diameter)],
+    [for(i=[0:half])helix(num_points, (( i)/half) * 180, pitch, diameter - 2 * depth * (i/half))]);  //Points on top clipped to length
+  valley_points = concat(
+    [for(i=[0:half-1])helix(0,(i/half) * 180, pitch, diameter - 2 * depth * i/half)], //Points on bottom clipped to zero
+      [for(i = [0:num_points-1])helix(i , 180, pitch, diameter - 2 * depth) ],
+        [for(i=[0:half])helix(num_points,180 + (i)/half * 180, pitch, diameter - 2 * depth * (1-i/half))]);  //Points on top clipped to length
+        
+  points = concat(ridge_points,valley_points);
+  num_points2 = num_points + $fn + 1; //Include additional points that keep endpoints flush.
+
+
+  paths = concat([for(j = [0,num_points2], i = [0:num_points2  - half - 2])[j + i, (j + i + num_points2  + half) % (num_points2  * 2), (j + i + 1 + num_points2  + half) % (num_points2 * 2), j + i + 1]],
+                  [[for(j=[0,num_points2], i = [0:half-1])i+j]], //Base polygon
+                  [[for(j=[0,num_points2], i = [0:half-1])num_points2 - i - 1 + j]]); //Top polygon
+  Tz(-length/2)
+    polyhedron(points, paths, 100);
+
 }
+
+//Returns a point on a helix.
+function helix(steps, phase, pitch, diameter) = [cos(steps/$fn * 360 + phase) * diameter/2, sin(steps/$fn * 360 + phase) * diameter/2,steps * pitch/$fn];
 
 // Module: bevel
 // Usage:
