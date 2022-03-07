@@ -678,30 +678,32 @@ module slot(length, r = BU/2)
 
 // Module: thread()
 // Usage:
-//   thread(length, internal = false)
+//   thread(length, internal = false, bevel = false, center = true);
+//   thread(length, internal = false, bevel = [false, false], center = true);
 // Example(3D):
 //   difference()
 //   {
 //      BU_cube([1,1,1]);
-//      thread(2, internal = true, center = true);
+//
+//      thread(2, internal = true, center = true, bevel = [true,false]);
 //   }
 module thread(length, internal = false, bevel = false, center = true)
 {
+  bevel = is_bool(bevel)?[bevel,bevel]: bevel;
+
   radius = (internal?(HoleRadius + 0.3):ShaftRadius);
   BU_Tz(center?0:length / 2)
   {
     simple_thread(length * BU, diameter = radius * 2 , pitch = ThreadPitch, depth = 1.3);
 
-    if(bevel && internal)
+    if(internal)
     {
-      
-      Sz(-1)
-      BU_Tz(length/2)
-      Tz(-radius/4 + 0.1)
-      Cy(r1 = radius/2, r2 = radius * 1.15, h = radius/2);
-      BU_Tz(length/2)
-        Tz(-radius/4 + 0.1)
-          Cy(r1 = radius/2, r2 = radius * 1.15, h = radius/2);
+      for(i = [0,1])
+        if(bevel[i])
+          Sz(-1 + 2 * i)
+            BU_Tz(length/2)
+              Tz(-radius/4 + 0.1)
+                Cy(r1 = radius/2, r2 = radius * 1.15, h = radius/2);
     }
   }
 }
