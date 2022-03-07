@@ -62,31 +62,32 @@ module motor_shaft_N20(N20_shaft_length = 4)
   shaft_length = ceil(min_thread_length + (N20_shaft_length + thread_motor_shaft_gap - 2) / BU);
   thread_length = shaft_length - (N20_shaft_length + thread_motor_shaft_gap - 2) / BU;
 
-  Rx(180)
-    D()
-    {
-      U()
+  BU_Tz(shaft_length)
+    Rx(180)
+      D()
       {
-        motor_shaft(length = shaft_length, thread_length = thread_length);
-
-        Tz(-2)
-          Cy(d = 9, h = 3, C = false);
-      }
-      Tz(-2)
-      {
-        D()
+        U()
         {
-          U()
-            Cy(d = 3, h = (N20_shaft_length - Clearance) * 2);
+          motor_shaft(length = shaft_length, thread_length = thread_length);
 
-          Ty(1.5)
-            Cu([3, 1.1, N20_shaft_length * 2]);
+          Tz(-2)
+            Cy(d = 9, h = 3, C = false);
         }
+        Tz(-2)
+        {
+          D()
+          {
+            U()
+              Cy(d = 3, h = (N20_shaft_length - Clearance) * 2);
 
-        Ty(0.5)
-          Cu([3,1, (N20_shaft_length - Clearance) * 2]);
+            Ty(1.5)
+              Cu([3, 1.1, N20_shaft_length * 2]);
+          }
+
+          Ty(0.5)
+            Cu([3,1, (N20_shaft_length - Clearance) * 2]);
+        }
       }
-    }
 }
 
 
