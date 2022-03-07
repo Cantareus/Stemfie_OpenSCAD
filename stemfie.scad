@@ -684,7 +684,7 @@ module slot(length, r = BU/2)
 //   difference()
 //   {
 //      BU_cube([1,1,1]);
-//
+//   
 //      thread(2, internal = true, center = true, bevel = [true,false]);
 //   }
 module thread(length, internal = false, bevel = false, center = true)

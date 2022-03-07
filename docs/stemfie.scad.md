@@ -976,7 +976,8 @@ Create a 2D slot profile.
 
 **Usage:** 
 
-- thread(length, internal = false)
+- thread(length, internal = false, bevel = false, center = true);
+- thread(length, internal = false, bevel = [false, false], center = true);
 
 <br/>
 
@@ -984,14 +985,15 @@ Create a 2D slot profile.
 
 <img align="left" alt="thread() Example 1" src="images\stemfie\thread.png" width="320" height="240">
 
+<br clear="all" />
+
     include <stemfie.scad>
     difference()
     {
        BU_cube([1,1,1]);
-       thread(2, internal = true, center = true);
+    
+       thread(2, internal = true, center = true, bevel = [true,false]);
     }
-
-<br clear="all" />
 
 ---
 
