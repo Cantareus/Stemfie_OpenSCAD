@@ -26,13 +26,39 @@ To use, add the following lines to the beginning of your file:
 
 ## Table of Contents
 
+- [`battery_holder()`](#module-battery_holder)
 - [`motor_shaft()`](#module-motor_shaft)
+- [`motor_shaft_yellow_gearbox()`](#module-motor_shaft_yellow_gearbox)
 - [`motor_shaft_N20()`](#module-motor_shaft_n20)
 - [`motor_case_N20()`](#module-motor_case_n20)
+- [`motor_case_yellow_gearbox()`](#module-motor_case_yellow_gearbox)
 - [`terminal_cutout()`](#module-terminal_cutout)
 - [`tab_connector()`](#module-tab_connector)
 - [`tab_connector_cutout()`](#module-tab_connector_cutout)
 
+
+### Module: battery\_holder()
+
+**Usage:** 
+
+- battery\_holder(half\_only = true);
+
+**Description:** 
+
+Creates a battery holder for two 10440 lithium batteries.
+
+<br/>
+
+**Example 1:** 
+
+<img align="left" alt="battery\_holder() Example 1" src="images\stemfie_electrics\battery_holder.png" width="320" height="240">
+
+    include <stemfie_electrics.scad>
+    battery_holder(half_only = true);
+
+<br clear="all" />
+
+---
 
 ### Module: motor\_shaft()
 
@@ -57,11 +83,23 @@ Creates a internally threaded motor shaft.
 
 ---
 
+### Module: motor\_shaft\_yellow\_gearbox()
+
+**Usage:** 
+
+- motor\_shaft\_yellow\_gearbox();
+
+**Description:** 
+
+Creates STEMFIE motor shaft to fit STEMFIE gearbox created from yellow motor gearbox.
+
+---
+
 ### Module: motor\_shaft\_N20()
 
 **Usage:** 
 
-- motor\_shaft\_N20(N20\_shaft\_length = 4);
+- motor\_shaft\_N20(N20\_shaft\_length = 4, motor\_shaft\_round\_length = 0);
 
 **Description:** 
 
@@ -98,6 +136,33 @@ Creates a STEMFIE motor case to fit an N20 geared motor.
 
     include <stemfie_electrics.scad>
     motor_case_N20(motor_length = 30, half_only = false);
+
+<br clear="all" />
+
+---
+
+### Module: motor\_case\_yellow\_gearbox()
+
+**Usage:** 
+
+- motor\_case\_yellow\_gearbox(top\_half = false, double\_sided = false);
+
+**Description:** 
+
+Creates a motor case for toy yellow gearboxes.
+TODO: support double_sided gearboxes.
+
+<br/>
+
+**Example 1:** Create top and bottom side-by-side ready to print.
+
+<img align="left" alt="motor\_case\_yellow\_gearbox() Example 1" src="images\stemfie_electrics\motor_case_yellow_gearbox.png" width="320" height="240">
+
+    include <stemfie_electrics.scad>
+    for(i = [0,1])
+      Tx((3 * BU + 1) * (1 - 2 * i) / 2)
+        Ry(180 * i)
+          motor_case_yellow_gearbox(top_half = i == 1);
 
 <br clear="all" />
 
@@ -165,10 +230,9 @@ Creates a tab to semi-permanently connect STEMFIE half blocks together.
 <img align="left" alt="tab\_connector() Example 1" src="images\stemfie_electrics\tab_connector.png" width="320" height="240">
 
     include <stemfie_electrics.scad>
-    rotate([90,0, 0])
-      for(i=[1:4])
-        BU_Tx(i)
-          tab_connector(i);
+    for(i=[1:4])
+      BU_Tx(i - 1)
+        tab_connector(i);
 
 <br clear="all" />
 
