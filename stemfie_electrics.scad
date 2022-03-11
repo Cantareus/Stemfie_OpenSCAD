@@ -23,10 +23,129 @@
 
 include <stemfie.scad>
 
-Terminal_Panel_Diameter = 8;
+Terminal_Panel_Diameter = 6;
 Terminal_Panel_Thickness = 2;
-Terminal_Max_Diameter = 11;
-Terminal_Length = 12;
+Terminal_Max_Diameter = 11.3;
+Terminal_Nut_Length = 3;
+Terminal_Length = 9;
+
+//manual_dc_speed_controller(top_half = false);
+module potentiometer_knob(shaft_length, thread_length)
+{
+  gap = 0.4;
+  pot_shaft_diameter = 6.3;
+  height = shaft_length + thread_length * BU + gap;
+
+  D()
+  {
+    LiEx(height, C = false)
+    {
+      offset(r = 1)
+      offset(-1)
+      D()
+      {
+        Ci(d = BU);
+        rotN(N = 10, r = BU/ 2)
+          Ci(d=1.5);
+      }
+    }
+    
+    Tz(height)
+      Rx(180)
+        thread(thread_length, center = false, internal = true, bevel = [true,false]);
+    Cy(d = pot_shaft_diameter, h = shaft_length * 2, $fn = 19);
+    Cy(d1 = 8, d2 = 6, h = 4, $fn = 19);
+  }
+}
+module manual_dc_speed_controller(top_half = false)
+{
+  PCB_dimensions = [16, 33.5, 1.6] + [0, Clearance, Clearance];
+
+  board_mid = BU/2 - 2.8 - PCB_dimensions.z / 2;
+
+  D()
+  {
+    Ry(top_half?180:0)
+    D()
+    {
+      BU_cube([3, 3, 1]);
+
+      //PCB Space
+      Tz(-board_mid + 3)
+      Cu([PCB_dimensions.x, PCB_dimensions.y, PCB_dimensions.z + 6]);
+      //PCB Bottom component space
+      Cu([PCB_dimensions.x, PCB_dimensions.y, BU - 1.6] - [0, 2, 0]);
+
+      //Programming plug
+      BU_Ty(1.5)
+      Tz(-board_mid + PCB_dimensions.z/2 + 2.5)
+        Cu([8,5,5]);
+
+      //Potentiometer hole
+        hole(depth = 0.5, center = false);
+
+      RKz(180)
+      RKy(180)
+        BU_T(x = -1, y = 1.5)
+          Rx(-90)
+          terminal_cutout();
+
+      MKx()
+        BU_Tx(1)
+        {
+          hole();
+          MKy()
+            Tx(2)
+            Ty(1.5 * BU - Terminal_Length - 4)
+              Rz(180)
+              tab_connector_cutout();
+        }
+    }
+
+    BU_Tz(0.5)
+      cube([3, 3, 1] * BU + [1,1,0], center = true);
+  }
+
+  if(top_half)
+  {
+    MKx()
+      BU_Tz(-0.5)
+        T(x = -PCB_dimensions.x/2, y = -5)
+          Cu([2,10,BU/2 + board_mid - PCB_dimensions.z/2 - Clearance], C = false);
+  }
+  
+}
+// Module: battery_holder()
+// Usage:
+//   battery_holder(half_only = true);
+// Description:
+//   Creates a battery holder for two 10440 lithium batteries.
+// Example(3D):
+//   battery_holder(half_only = true);
+module battery_holder(half_only = true)
+{
+  battery_diameter = 10;
+  battery_length = 44;
+  
+  case_width = 2;
+  case_height = 1;
+  case_length = 6;
+  D()
+  {
+    BU_Ty(case_length/2 - 2)
+    BU_cube([case_width, case_length, case_height]);
+
+    if(half_only)
+      BU_Tz(0.5)
+      BU_Ty(case_length/2 - 2)
+        cube([case_width, case_length, case_height] * BU + [1,1,0], center = true);
+    MKx()
+      BU_Tx(0.5)
+        BU_Ty(2)
+          Rx(90)
+            Cy(d = battery_diameter + Clearance * 2, h = battery_length);
+  }
+}
 
 // Module: motor_shaft()
 // Usage:
@@ -39,27 +158,52 @@ module motor_shaft(length = 1, thread_length = 0.75)
 {
   D()
   {
-    Tz(Clearance)
-      Cy(d = BU - Clearance * 2, h = length * BU - Clearance, C = false);
+    
+    Cy(d = BU - Clearance * 2, h = length * BU - Clearance, C = false);
 
-    BU_Tz(length)
+    BU_Tz(length - Clearance / BU)
       Rx(180)
         thread(length = thread_length, center = false, internal = true, bevel = [true, false]);
   }
 }
 
+// Module: motor_shaft_yellow_gearbox()
+// Usage:
+//   motor_shaft_yellow_gearbox();
+// Description:
+//   Creates STEMFIE motor shaft to fit STEMFIE gearbox created from yellow motor gearbox.
+// Example(3D)
+//   motor_shaft_yellow_gearbox();
+module motor_shaft_yellow_gearbox()
+{
+  D()
+  {
+    Tz(2 * Clearance/BU)
+      motor_shaft(length = 1 - 2 * Clearance/BU, thread_length = 0.5);
+
+
+    cutout((5.64 - Clearance * 2)/BU, center = false, bevel = [false, true])
+      I()
+      {
+        Ci(d = 5.5);
+
+        Sq(6,3.9);
+      }
+  }
+}
+
 // Module: motor_shaft_N20()
 // Usage:
-//   motor_shaft_N20(N20_shaft_length = 4);
+//   motor_shaft_N20(N20_shaft_length = 4, motor_shaft_round_length = 0);
 // Description:
 //   Creates STEMFIE motor shaft to fit N20 motor shaft.
 // Example(3D)
 //   motor_shaft_N20(N20_shaft_length = 7);
-module motor_shaft_N20(N20_shaft_length = 4)
+module motor_shaft_N20(N20_shaft_length = 4, motor_shaft_round_length = 0)
 {
   min_thread_length = 0.5;
   thread_motor_shaft_gap = 0.4;
-  shaft_length = ceil(min_thread_length + (N20_shaft_length + thread_motor_shaft_gap - 2) / BU);
+  shaft_length = ceil((min_thread_length + (N20_shaft_length + thread_motor_shaft_gap - BU/2) / BU) * 2) / 2;
   thread_length = shaft_length - (N20_shaft_length + thread_motor_shaft_gap - 2) / BU;
 
   BU_Tz(shaft_length)
@@ -70,26 +214,28 @@ module motor_shaft_N20(N20_shaft_length = 4)
         {
           motor_shaft(length = shaft_length, thread_length = thread_length);
 
-          Tz(-2)
-            Cy(d = 9, h = 3, C = false);
+          Tz(-BU/2 + 0.8)
+            Cy(d = 9, h = BU/2, C = false);
         }
-        Tz(-2)
-        {
-          D()
-          {
-            U()
-              Cy(d = 3, h = (N20_shaft_length - Clearance) * 2);
 
-            Ty(1.5)
-              Cu([3, 1.1, N20_shaft_length * 2]);
+        Tz(-BU/2 + 0.8)
+        {
+          Tz(motor_shaft_round_length)
+          cutout(depth = (N20_shaft_length - 0.8) / BU, bevel = [false, motor_shaft_round_length == 0], center =  false)
+          {
+            
+            CiH(d = 3);
+
+            Ty(-0.5)
+              Sq(3,1);
           }
 
-          Ty(0.5)
-            Cu([3,1, (N20_shaft_length - Clearance) * 2]);
+          if(motor_shaft_round_length > 0)
+            cutout(depth = (motor_shaft_round_length) / BU, bevel = [false, true], center =  false)
+              Ci(d = 3.2);
         }
       }
 }
-
 
 // Module: motor_case_N20()
 // Usage:
@@ -103,7 +249,9 @@ module motor_shaft_N20(N20_shaft_length = 4)
 module motor_case_N20(motor_length = 24, half_only = true)
 {
   motor_width = 12;
+
   motor_height = 10;
+
   case_length = ceil(motor_length / BU) + 1;
 
   D()
@@ -117,8 +265,8 @@ module motor_case_N20(motor_length = 24, half_only = true)
         Cu([3 * BU + 1, case_length * BU + 1, BU], C = true);
 
     //Motor cutout
-    BU_Ty(case_length / 2)
-      Ty(-motor_length/2 - 2)
+    BU_Ty(case_length / 2 - 0.5)
+      Ty(-motor_length/2)
         Cu([motor_width + Clearance, motor_length + Clearance * 2, motor_height + Clearance]);
 
     //Motor shaft opening
@@ -128,8 +276,8 @@ module motor_case_N20(motor_length = 24, half_only = true)
 
     //Motor rear end space.
     BU_Ty(-case_length / 2)
-      T(-motor_width / 2, 6, -5.5/2)
-        Cu([motor_width, case_length * BU - motor_length - 6, 5.5], C = false);
+      T(-motor_width / 2, Terminal_Panel_Thickness, -5.5/2)
+        Cu([motor_width, case_length * BU - motor_length, 5.5], C = false);
 
     RKy(180)
     {
@@ -139,10 +287,8 @@ module motor_case_N20(motor_length = 24, half_only = true)
           hole_grid([1,case_length - 1]);
       
       //Tab connector holes
-      BU_T(x = -1.1, y = case_length/2 - 1)
-        tab_connector_cutout();
-      BU_T(x = 0.4, y = -case_length/2)
-        Ty(3)
+      MKy()
+        BU_T(x = -1.5 + 5/BU, y = case_length/2 - 1)
           tab_connector_cutout();
 
       //Banana terminal cutout
@@ -150,6 +296,184 @@ module motor_case_N20(motor_length = 24, half_only = true)
         BU_Ty(-case_length / 2)
           Rx(90)
             terminal_cutout();
+    }
+  }
+}
+
+// Module: motor_case_yellow_gearbox()
+// Usage:
+//   motor_case_yellow_gearbox(top_half = false, double_sided = false);
+// Description:
+//   Creates a motor case for toy yellow gearboxes.
+//   TODO: support double_sided gearboxes.
+// Example(3D): Create top and bottom side-by-side ready to print.
+//   for(i = [0,1])
+//     Tx((3 * BU + 1) * (1 - 2 * i) / 2)
+//       Ry(180 * i)
+//         motor_case_yellow_gearbox(top_half = i == 1);
+module motor_case_yellow_gearbox(top_half = false, double_sided = false)
+{
+  
+  case_size = [3, 6, 2];
+  output_crown_distance = 11.4;
+  output_motor_distance = output_crown_distance + 14;
+  motor_length = 25;
+
+  D()
+  {
+    U()
+    {
+      BU_Ty(-1.5)
+        D()
+        {
+            BU_cube(case_size);
+
+            BU_cube([20 / BU, case_size.y - 4/BU, case_size.z - 4 / BU]);
+        }
+
+      MKx()
+        BU_T(x=1,y=1)
+          hole(depth = 2, neg = false);
+
+      
+      //Output shaft gear space
+      Tz(-1)
+        Sz(-1)
+          Ri(D = 7.5, d = 5.5, h = case_size.z/2 * BU - 1, C = false);
+      Tz(9)
+        Ri(D = 7.5, d = 5.5, h = case_size.z/2 * BU - 9, C = false);
+
+      Ty(-output_crown_distance)
+      {
+        D()
+          {
+            U(){
+              Ri(D = 4, d = 2.2, h = case_size.z * BU);
+
+              Tz(-4.7 - (18-13)/2 - 0.3)
+                Cy(d = 4, h = 0.6);
+
+              Tz(18-4.7 - (18-13)/2 + 0.3)
+                Cy(d = 4, h = 0.6);
+            }
+        }
+      }
+
+      //Motor housing
+      Ty(-output_motor_distance)
+      {
+          Ty(2-32/2)
+            Cu([case_size.x * BU - 3, 32, case_size.z * BU]);
+      }
+    }
+
+    //Motor housing
+    Ty(-output_motor_distance)
+    {
+      //Front bearing
+      Rx(-90)
+        Tz(-0.1)
+          Cy(d = 6, h = 3, C = false);
+
+      //Main motor body
+      Rx(90)
+      {
+        I()
+        {
+          Cy(d=20, h = 25, C = false);
+
+          Tz(25/2)
+            Cu([26,15,25]);
+        }
+        //End cap
+        Cy(d=10, h = 28, C = false);
+      }
+    }
+
+    //Output shaft space
+    Cy(d = 5.7, h = case_size.z * BU, C = false);
+    
+    //Reinforcing shaft perimeters
+    MKz()
+    {
+      BU_Tz(-case_size.z/2)
+        Tz(0.6)
+        {
+          //Output shaft
+          D()
+          {
+            Ri(D = 8, d = 7.7,h = 2, C = false);
+            RKz(90)
+              Cu([1.6,10,10]);
+          }
+
+          //Crown gear shaft
+          Ty(-output_crown_distance)
+          {
+            D()
+            {
+            Ri(D = 4.4, d = 4.1,h = 2, C = false);
+
+            RKz(90)
+              Cu([1.6,10,10]);
+            }
+          }
+        }
+    }
+
+    Ty(-output_crown_distance)
+    {
+      Tz(-4.7)
+      {
+        //Crown shaft gear space
+        Cy(d = 15, h = 13.2, C = false);
+      }
+    }
+    //Two corner STEMFIE  holes
+    MKx()
+      BU_T(1,1)
+        hole(depth = 2, neg = true, center = true);
+  
+    //Connecting tabs
+    MKx()
+      BU_Ty(-1.5)
+        Tx(1.5 * BU - 4)
+          forY(M = 3, dy = BU * 2)
+            tab_connector_cutout(length = 2);
+
+
+    //Side threads
+    BU_Ty(-1.5)
+      RKy(180)
+        BU_Tx(1.5)
+          Ry(-90)
+            forXY(N = 2, M = 4, dx = BU, dy = BU)
+              thread(0.5, internal = true, bevel = [true, false], center = false);
+    
+    //Terminals
+    BU_Tz(-0.5)
+    {
+      BU_Ty(-4.5)
+        RKy(180)
+          BU_Tx(-1)
+            Rx(90)
+              terminal_cutout();
+
+      T(y = -(output_motor_distance + 20 + 4.5 * BU - 2) / 2, z = 1.1)
+        Cu([case_size.x * BU - 4, 4.5 * BU - 2 - output_motor_distance -20,BU - 2]);
+    }
+
+    //Cut part in half
+    BU_Tz(top_half?-1:1)
+    {
+      //Evenly in half up to motor housing
+      BU_Ty(-1.5)
+        Cu(case_size*BU+[BU, BU, 0]);
+
+      //Split at 1/4 height along banana terminals.
+      //BU_Tz(-0.5)
+        //BU_Ty(-4.5)
+          //Cu([4, 1,2] * BU);
     }
   }
 }
@@ -179,14 +503,15 @@ module terminal_cutout(solder_tab = true)
   Sz(-1)
   {
     Tz(-0.1)
-      Cy(h = Terminal_Panel_Thickness + 0.2, d = Terminal_Panel_Diameter + Clearance, C = false);
+      Cy(h = Terminal_Length + 0.2, d = Terminal_Panel_Diameter + Clearance, C = false);
 
     Tz(Terminal_Panel_Thickness)
-      Cy(h = Terminal_Length - Terminal_Panel_Thickness, d = Terminal_Max_Diameter + Clearance, C = false);
+      Rz(30)
+      Cy(h = Terminal_Nut_Length, d = Terminal_Max_Diameter + Clearance, C = false, $fn = 6);
 
-    Tz(Terminal_Length - 3)
+    Tz(Terminal_Panel_Thickness + Terminal_Nut_Length / 2)
       BU_Tx(1/2)
-        Cu(BU + 0.1, 5.5, 6);
+        Cu(BU + 0.1, 5.5, Terminal_Nut_Length);
   }
 }
 
@@ -196,29 +521,31 @@ module terminal_cutout(solder_tab = true)
 // Description:
 //   Creates a tab to semi-permanently connect STEMFIE half blocks together.
 // Example(3D): tabs for connecting 1 to 4 block units wide objects.
-//   rotate([90,0, 0])
-//     for(i=[1:4])
-//       BU_Tx(i)
-//         tab_connector(i);
+//   for(i=[1:4])
+//     BU_Tx(i - 1)
+//       tab_connector(i);
 module tab_connector(length = 1)
 {
-  {
+  bevel_plate((3-Clearance)/BU, center = false)
     D()
     {
-      U()
-      {
-        Cu([4.5 - Clearance,3- Clearance,2- Clearance], C = false);
-        Cu([3- Clearance,3- Clearance,length * BU- Clearance * 2], C = false);
-        Tz(length * BU - 2)
-        Cu([5- Clearance,3- Clearance,2- Clearance], C = false);
-      }
-        Ty(-1)
+      Sq(3 - Clearance,length * BU, center = false);
+
+      Ty(-1)
         Tx(1.6)
-        Ry(-99)
-        Cu([length * BU,10,10], C = false);
+          Rz(99)
+            Sq(length * BU,10, center = false);
     }
-    
-  }
+
+  bevel_plate((3-Clearance)/BU, center = false)
+    Tx(2)
+      Sq(2, 2- Clearance, center = false);
+
+  bevel_plate((3-Clearance)/BU, center = false)
+    Tx(2)
+      Ty(length * BU)
+        Sy(-1)
+          Sq(2.5, 2 - Clearance, center = false);
 }
 
 // Module: tab_connector_cutout()
