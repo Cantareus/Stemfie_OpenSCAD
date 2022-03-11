@@ -691,7 +691,7 @@ module thread(length, internal = false, bevel = false, center = true)
 {
   bevel = is_bool(bevel)?[bevel,bevel]: bevel;
 
-  radius = (internal?(HoleRadius + 0.3):ShaftRadius);
+  radius = (internal?(HoleRadius + 0.2):ShaftRadius);
   BU_Tz(center?0:length / 2)
   {
     simple_thread(length * BU, diameter = radius * 2 , pitch = ThreadPitch, depth = 1.3);
@@ -1226,7 +1226,7 @@ module forXY(dx = 10, N=4, dy = 10, M=4) forX(dx, N) forY(dy, M) children();
 
 // primitives - 2D
 
-module Sq(x =10, y = undef, center = true)
+module Sq(x = 10, y = undef, center = true)
 {
 		square([x, y?y:x], center = center); 
 }
