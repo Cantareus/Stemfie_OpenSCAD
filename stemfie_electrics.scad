@@ -84,7 +84,6 @@ module manual_dc_speed_controller(top_half = false)
         Cu([8.4,5,3.5]);
 
       //Potentiometer hole
-      Ty(0.75)
         hole(depth = 0.5, center = false);
 
       RKz(180)
