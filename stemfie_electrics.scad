@@ -25,11 +25,12 @@ include <stemfie.scad>
 
 Terminal_Panel_Diameter = 6;
 Terminal_Panel_Thickness = 2;
-Terminal_Max_Diameter = 11.3;
+Terminal_Max_Diameter = 9.5;
 Terminal_Nut_Length = 3;
 Terminal_Length = 9;
 
-//manual_dc_speed_controller(top_half = false);
+connecting_method = "Clip"; //[Clip, Tab, Filament Rivet, None]
+
 module potentiometer_knob(shaft_length, thread_length)
 {
   gap = 0.4;
@@ -57,6 +58,7 @@ module potentiometer_knob(shaft_length, thread_length)
     Cy(d1 = 8, d2 = 6, h = 4, $fn = 19);
   }
 }
+
 module manual_dc_speed_controller(top_half = false)
 {
   PCB_dimensions = [16, 33.5, 1.6] + [0, Clearance, Clearance];
@@ -78,10 +80,11 @@ module manual_dc_speed_controller(top_half = false)
 
       //Programming plug
       BU_Ty(1.5)
-      Tz(-board_mid + PCB_dimensions.z/2 + 2.5)
-        Cu([8,5,5]);
+      Tz(-board_mid + PCB_dimensions.z/2 + 1.7)
+        Cu([8.4,5,3.5]);
 
       //Potentiometer hole
+      Ty(0.75)
         hole(depth = 0.5, center = false);
 
       RKz(180)
@@ -89,16 +92,19 @@ module manual_dc_speed_controller(top_half = false)
         BU_T(x = -1, y = 1.5)
           Rx(-90)
           terminal_cutout();
+      MKy()
+        T(x = -(BU * 1.5 - 1), y = -1.5 * BU + Terminal_Panel_Thickness, z = -board_mid)
+          Cu(3 * BU - 2, 5, BU - 2 - board_mid, C = false);
 
       MKx()
         BU_Tx(1)
         {
           hole();
           MKy()
-            Tx(2)
-            Ty(1.5 * BU - Terminal_Length - 4)
+            BU_Tx(0.5)
+            Ty(0.5 * BU)
               Rz(180)
-              tab_connector_cutout();
+                connector_cutout();
         }
     }
 
@@ -288,8 +294,8 @@ module motor_case_N20(motor_length = 24, half_only = true)
       
       //Tab connector holes
       MKy()
-        BU_T(x = -1.5 + 5/BU, y = case_length/2 - 1)
-          tab_connector_cutout();
+        BU_T(x = -1.5, y = case_length/2 - 1)
+          connector_cutout();
 
       //Banana terminal cutout
       BU_Tx(-1)
@@ -437,9 +443,9 @@ module motor_case_yellow_gearbox(top_half = false, double_sided = false)
     //Connecting tabs
     MKx()
       BU_Ty(-1.5)
-        Tx(1.5 * BU - 4)
+        Tx(-1.5 * BU)
           forY(M = 3, dy = BU * 2)
-            tab_connector_cutout(length = 2);
+            connector_cutout(length = 2);
 
 
     //Side threads
@@ -465,16 +471,8 @@ module motor_case_yellow_gearbox(top_half = false, double_sided = false)
 
     //Cut part in half
     BU_Tz(top_half?-1:1)
-    {
-      //Evenly in half up to motor housing
       BU_Ty(-1.5)
         Cu(case_size*BU+[BU, BU, 0]);
-
-      //Split at 1/4 height along banana terminals.
-      //BU_Tz(-0.5)
-        //BU_Ty(-4.5)
-          //Cu([4, 1,2] * BU);
-    }
   }
 }
 
@@ -515,6 +513,46 @@ module terminal_cutout(solder_tab = true)
   }
 }
 
+
+
+module connector_cutout(length = 1)
+{
+  if(connecting_method == "Clip")
+    clip_connector_cutout(length);
+  else if(connecting_method == "Tab")
+    tab_connector_cutout(length);
+  else if(connecting_method == "Filament Rivet")
+    rivet_connector_cutout(length);
+}
+
+module connector(length = 1)
+{
+  if(connecting_method == "Clip")
+    clip_connector(length);
+  else if(connecting_method == "Tab")
+    tab_connector(length);
+  else if(connecting_method == "Filament Rivet")
+    rivet_connector(length);
+}
+
+module rivet_connector_cutout(length = 1)
+{
+  Tx(3.6)
+  {
+    Cy(d = 2, h = length * BU);
+
+    MKz()
+      BU_Tz(length/2)
+        Cy(d2 = 6, d1 = 2, h = 2);
+  }
+}
+
+module rivet_connector(length = 1)
+{
+  Tx(3.6)
+    Cy(d = 1.75, h = length * BU);
+}
+
 // Module: tab_connector()
 // Usage:
 //   tab_connector(length = 1);
@@ -526,26 +564,31 @@ module terminal_cutout(solder_tab = true)
 //       tab_connector(i);
 module tab_connector(length = 1)
 {
-  bevel_plate((3-Clearance)/BU, center = false)
-    D()
-    {
-      Sq(3 - Clearance,length * BU, center = false);
+  Tx(1.6)
+  BU_Tz(-length / 2)
+  Rx(90)
+  {
+    bevel_plate((3-Clearance)/BU, center = true)
+      D()
+      {
+        Sq(3 - Clearance,length * BU, center = false);
 
-      Ty(-1)
-        Tx(1.6)
-          Rz(99)
-            Sq(length * BU,10, center = false);
-    }
+        Ty(-1)
+          Tx(1.6)
+            Rz(99)
+              Sq(length * BU,10, center = false);
+      }
 
-  bevel_plate((3-Clearance)/BU, center = false)
-    Tx(2)
-      Sq(2, 2- Clearance, center = false);
+    bevel_plate((3-Clearance)/BU, center = true)
+      Tx(2)
+        Sq(2, 2- Clearance, center = false);
 
-  bevel_plate((3-Clearance)/BU, center = false)
-    Tx(2)
-      Ty(length * BU)
-        Sy(-1)
-          Sq(2.5, 2 - Clearance, center = false);
+    bevel_plate((3-Clearance)/BU, center = true)
+      Tx(2)
+        Ty(length * BU)
+          Sy(-1)
+            Sq(2.5, 2 - Clearance, center = false);
+  }
 }
 
 // Module: tab_connector_cutout()
@@ -562,6 +605,7 @@ module tab_connector(length = 1)
 //   }
 module tab_connector_cutout(length = 1, C = true)
 {
+  Tx(4.1)
   BU_Tz(C?-length/2:0)
     T(x = -2.5, y = -1.5)
     {
@@ -572,5 +616,65 @@ module tab_connector_cutout(length = 1, C = true)
 
       Tz(length * BU - 2)
         Cu([5,3,2.1], C = false);
+  }
+}
+
+
+module clip_connector(length = 1)
+{
+  Tx(1.6)
+  MKz()
+    BU_Tz(-length/2)
+    {
+      clip_connector_end(3.2);
+    }
+  Rx(90)
+    bevel_plate(3.2 / BU)
+      Tx(1.5/2)
+      Sq(1.5, length * BU);
+}
+
+
+module clip_connector_cutout(length = 1)
+{
+  width = 3.2 + Clearance;
+
+  Rx(90)
+  LiEx(width)
+  offset(Clearance)
+  projection()
+    Rx(90)
+      clip_connector(length);
+}
+
+module clip_connector_end(width = 3.2, outer_bevel = false)
+{
+  Rx(90)
+  I()
+  {
+    D()
+    {
+      if(outer_bevel)
+        bevel_plate(h = width/BU, top_bevel = false)
+          Sq(BU/2, BU, center = false);
+      else
+        Tz(-width / 2)
+        Cu(BU/2,BU,width, C = false);
+
+      D()
+      {
+        T(x = 1.5 + 10, y = BU/2)
+          cutout(depth = width / BU)
+            Ci(d = 20,false, $fn = 64);
+
+        bevel_plate(h = width/BU, top_bevel = false)
+          Tx(BU/2)
+            Rz(45)
+              Sx(-1)
+                Sq(3.5, 3.5, center = false);
+      }
+    }
+    T(z = -width)
+      Cu(BU/2,BU/2, width * 2, C = false);
   }
 }
